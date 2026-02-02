@@ -94,6 +94,7 @@ class MockMasterDesigner {
                             <input type="file" accept="image/*" class="mockmaster-designer__upload-input" />
                             <span>Choose image</span>
                         </label>
+                        <ul class="mockmaster-designer__upload-list" data-role="design-uploads"></ul>
                     </div>
                     <div class="mockmaster-designer__panel" data-panel="placement">
                         <p class="mockmaster-designer__panel-title">Choose placement</p>
