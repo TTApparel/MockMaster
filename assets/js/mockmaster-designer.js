@@ -18,7 +18,12 @@
     const $baseImage = $root.find('.mockmaster-designer__base-image');
     const $designImage = $root.find('.mockmaster-designer__design-image');
     const $uploadInput = $root.find('.mockmaster-designer__upload-input');
+    const $uploadList = $root.find('[data-role="design-uploads"]');
     const $placementButtons = $root.find('.mockmaster-designer__placement-options button');
+    const $stage = $root.find('.mockmaster-designer__image-stage');
+    const uploadedDesigns = [];
+    let isDragging = false;
+    const dragNamespace = `.mockmasterDesigner${Math.random().toString(36).slice(2)}`;
 
     function renderColors() {
       const colors = data.colors || {};
@@ -100,12 +105,58 @@
         return;
       }
 
+      uploadedDesigns.push(file.name);
+      if ($uploadList.length) {
+        const listItems = uploadedDesigns.map((name) => `<li>${name}</li>`).join('');
+        $uploadList.html(listItems);
+      }
+
       const reader = new FileReader();
       reader.onload = function (loadEvent) {
         $designImage.attr('src', loadEvent.target.result);
         $designImage.addClass('is-visible');
       };
       reader.readAsDataURL(file);
+    });
+
+    $designImage.on('mousedown', function (event) {
+      if (!$designImage.attr('src')) {
+        return;
+      }
+
+      isDragging = true;
+      event.preventDefault();
+    });
+
+    $(document).on(`mousemove${dragNamespace}`, function (event) {
+      if (!isDragging) {
+        return;
+      }
+
+      const stageOffset = $stage.offset();
+      if (!stageOffset) {
+        return;
+      }
+
+      const stageWidth = $stage.outerWidth();
+      const stageHeight = $stage.outerHeight();
+      let x = event.pageX - stageOffset.left;
+      let y = event.pageY - stageOffset.top;
+
+      x = Math.max(0, Math.min(stageWidth, x));
+      y = Math.max(0, Math.min(stageHeight, y));
+
+      $designImage.css({
+        left: `${x}px`,
+        top: `${y}px`,
+        transform: 'translate(-50%, -50%)',
+      });
+    });
+
+    $(document).on(`mouseup${dragNamespace}`, function () {
+      if (isDragging) {
+        isDragging = false;
+      }
     });
 
     $root.on('click', '.mockmaster-designer__placement-options button', function () {
