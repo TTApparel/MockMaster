@@ -1,0 +1,237 @@
+.mockmaster-designer {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 24px;
+  align-items: center;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+
+.mockmaster-designer__left,
+.mockmaster-designer__right {
+  position: relative;
+  min-height: 520px;
+}
+
+.mockmaster-designer__arc {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 28px;
+}
+
+.mockmaster-designer__arc--left::before,
+.mockmaster-designer__arc--right::before {
+  content: "";
+  position: absolute;
+  inset: 10% 30%;
+  border: 2px solid #1a1a1a;
+  border-color: #1a1a1a transparent transparent transparent;
+  border-radius: 100% 0 0 0;
+}
+
+.mockmaster-designer__arc--right::before {
+  inset: 10% 30%;
+  border-color: #1a1a1a transparent transparent transparent;
+  transform: scaleX(-1);
+}
+
+.mockmaster-designer__category {
+  background: #fff;
+  border: 2px solid #1a1a1a;
+  border-radius: 999px;
+  padding: 10px 18px;
+  text-transform: uppercase;
+  font-size: 14px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+
+.mockmaster-designer__category.is-active {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+.mockmaster-designer__center {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.mockmaster-designer__image-stage {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 3 / 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f6f6f6;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.mockmaster-designer__base-image,
+.mockmaster-designer__design-image {
+  position: absolute;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.mockmaster-designer__design-image {
+  width: 40%;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.mockmaster-designer__design-image.is-visible {
+  opacity: 1;
+}
+
+.mockmaster-designer__placeholder {
+  color: #666;
+  font-size: 14px;
+}
+
+.mockmaster-designer__alt-views {
+  display: flex;
+  gap: 12px;
+}
+
+.mockmaster-designer__alt-view {
+  border: 1px solid #1a1a1a;
+  background: #fff;
+  padding: 6px 12px;
+  font-size: 12px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.mockmaster-designer__add-to-cart {
+  border: 2px solid #e01b24;
+  background: #fff;
+  color: #e01b24;
+  padding: 10px 22px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.mockmaster-designer__panel {
+  display: none;
+  background: #fff;
+  border: 1px solid #1a1a1a;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1;
+}
+
+.mockmaster-designer__panel.is-active {
+  display: block;
+}
+
+.mockmaster-designer__panel-title {
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.mockmaster-designer__swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+  gap: 8px;
+}
+
+.mockmaster-designer__swatch {
+  border: 1px solid #1a1a1a;
+  padding: 8px;
+  text-align: center;
+  font-size: 12px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.mockmaster-designer__swatch.is-active {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+.mockmaster-designer__upload {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px dashed #1a1a1a;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.mockmaster-designer__upload-input {
+  display: none;
+}
+
+.mockmaster-designer__placement-options {
+  display: grid;
+  gap: 8px;
+}
+
+.mockmaster-designer__placement-options button {
+  border: 1px solid #1a1a1a;
+  background: #fff;
+  padding: 8px 12px;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.mockmaster-designer__placement-options button.is-active {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+.mockmaster-designer__quantities {
+  display: grid;
+  gap: 10px;
+}
+
+.mockmaster-designer__quantity-row {
+  display: grid;
+  grid-template-columns: 1fr 70px 70px;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+}
+
+.mockmaster-designer__quantity-row input {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ccc;
+}
+
+@media (max-width: 900px) {
+  .mockmaster-designer {
+    grid-template-columns: 1fr;
+  }
+
+  .mockmaster-designer__left,
+  .mockmaster-designer__right {
+    min-height: auto;
+  }
+
+  .mockmaster-designer__arc--left::before,
+  .mockmaster-designer__arc--right::before {
+    display: none;
+  }
+}
