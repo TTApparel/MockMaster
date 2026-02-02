@@ -162,9 +162,7 @@
 
 .mockmaster-designer__swatch {
   border: 1px solid var(--mm-arc-color, #1a1a1a);
-  width: 42px;
-  height: 42px;
-  padding: 0;
+  padding: 8px;
   text-align: center;
   font-size: 12px;
   text-transform: uppercase;
@@ -180,42 +178,6 @@
 .mockmaster-designer__swatch.is-active {
   background: var(--mm-swatch-active-bg, #1a1a1a);
   color: var(--mm-swatch-active-text, #fff);
-}
-
-.mockmaster-designer__swatch.has-image {
-  background-size: cover;
-  background-position: center;
-  color: transparent;
-}
-
-.mockmaster-designer__swatch-text {
-  pointer-events: none;
-}
-
-.mockmaster-designer__swatch.has-image .mockmaster-designer__swatch-text {
-  opacity: 0;
-}
-
-.mockmaster-designer__swatch-tooltip {
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: #1a1a1a;
-  color: #fff;
-  font-size: 11px;
-  padding: 4px 6px;
-  border-radius: 4px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s ease;
-  z-index: 2;
-}
-
-.mockmaster-designer__swatch:hover .mockmaster-designer__swatch-tooltip,
-.mockmaster-designer__swatch:focus .mockmaster-designer__swatch-tooltip {
-  opacity: 1;
 }
 
 .mockmaster-designer__upload {
