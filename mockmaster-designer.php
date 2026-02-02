@@ -175,9 +175,6 @@ class MockMasterDesigner {
         ?>
         <div class="wrap">
             <h1>MockMaster Designer</h1>
-            <div class="notice notice-info">
-                <p><strong>How to add this to product pages:</strong> Add the <code>[mockmaster_designer]</code> shortcode to your product description or any custom product tab that supports shortcodes. Developers can also place it in templates via <code>echo do_shortcode('[mockmaster_designer]');</code>.</p>
-            </div>
             <?php if ($updated) : ?>
                 <div class="notice notice-success is-dismissible">
                     <p>Settings updated.</p>
@@ -299,7 +296,6 @@ class MockMasterDesigner {
                                 <input type="file" accept="image/*" class="mockmaster-designer__upload-input" />
                                 <span>Choose image</span>
                             </label>
-                            <ul class="mockmaster-designer__upload-list" data-role="design-uploads"></ul>
                         </div>
                         <div class="mockmaster-designer__panel" data-panel="placement">
                             <p class="mockmaster-designer__panel-title">Choose placement</p>
@@ -512,10 +508,6 @@ class MockMasterDesigner {
         $meta_keys = array(
             'swatch_image',
             'swatch_image_id',
-            'swatch_image_url',
-            'swatch_image_src',
-            'swatch_id',
-            'swatch',
             'product_attribute_swatch',
             'product_attribute_image',
             'attribute_image',
@@ -528,13 +520,6 @@ class MockMasterDesigner {
                 continue;
             }
 
-            if (is_array($value)) {
-                $value = $this->resolve_swatch_meta_array($value);
-                if (!$value) {
-                    continue;
-                }
-            }
-
             if (is_numeric($value)) {
                 $image_url = wp_get_attachment_image_url((int) $value, 'thumbnail');
                 if ($image_url) {
@@ -544,17 +529,6 @@ class MockMasterDesigner {
 
             if (is_string($value) && filter_var($value, FILTER_VALIDATE_URL)) {
                 return $value;
-            }
-        }
-
-        return '';
-    }
-
-    private function resolve_swatch_meta_array($value) {
-        $keys = array('image_id', 'id', 'attachment_id', 'image', 'url');
-        foreach ($keys as $key) {
-            if (!empty($value[$key])) {
-                return $value[$key];
             }
         }
 
