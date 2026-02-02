@@ -174,9 +174,6 @@ class MockMasterDesigner {
         ?>
         <div class="wrap">
             <h1>MockMaster Designer</h1>
-            <div class="notice notice-info">
-                <p><strong>How to add this to product pages:</strong> Add the <code>[mockmaster_designer]</code> shortcode to your product description or any custom product tab that supports shortcodes. Developers can also place it in templates via <code>echo do_shortcode('[mockmaster_designer]');</code>.</p>
-            </div>
             <?php if ($updated) : ?>
                 <div class="notice notice-success is-dismissible">
                     <p>Settings updated.</p>
