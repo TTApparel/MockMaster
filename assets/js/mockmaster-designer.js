@@ -38,7 +38,16 @@
         .map((key, index) => {
           const color = colors[key];
           const activeClass = index === 0 ? 'is-active' : '';
-          return `<button type="button" class="mockmaster-designer__swatch ${activeClass}" data-color="${key}">${color.label || key}</button>`;
+          const label = color.label || key;
+          const swatchImage = color.swatch;
+          const styleAttr = swatchImage ? `style="background-image: url('${swatchImage}');"` : '';
+          const imageClass = swatchImage ? 'has-image' : '';
+          return `
+            <button type="button" class="mockmaster-designer__swatch ${activeClass} ${imageClass}" data-color="${key}" ${styleAttr} aria-label="${label}">
+              <span class="mockmaster-designer__swatch-text">${label}</span>
+              <span class="mockmaster-designer__swatch-tooltip">${label}</span>
+            </button>
+          `;
         })
         .join('');
 

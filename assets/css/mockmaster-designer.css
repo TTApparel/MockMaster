@@ -167,6 +167,12 @@
   font-size: 12px;
   text-transform: uppercase;
   cursor: pointer;
+  position: relative;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .mockmaster-designer__swatch.is-active {

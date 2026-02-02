@@ -474,6 +474,7 @@ class MockMasterDesigner {
                     $data['colors'][$color] = array(
                         'label' => $attributes['attribute_pa_color'],
                         'image' => $variation['image']['src'] ?? $data['defaultImage'],
+                        'swatch' => $this->get_swatch_image_url($color),
                     );
                 }
 
@@ -492,6 +493,46 @@ class MockMasterDesigner {
         }
 
         return $data;
+    }
+
+    private function get_swatch_image_url($color_slug) {
+        if (!taxonomy_exists('pa_color')) {
+            return '';
+        }
+
+        $term = get_term_by('slug', $color_slug, 'pa_color');
+        if (!$term || is_wp_error($term)) {
+            return '';
+        }
+
+        $meta_keys = array(
+            'swatch_image',
+            'swatch_image_id',
+            'product_attribute_swatch',
+            'product_attribute_image',
+            'attribute_image',
+            'thumbnail_id',
+        );
+
+        foreach ($meta_keys as $key) {
+            $value = get_term_meta($term->term_id, $key, true);
+            if (!$value) {
+                continue;
+            }
+
+            if (is_numeric($value)) {
+                $image_url = wp_get_attachment_image_url((int) $value, 'thumbnail');
+                if ($image_url) {
+                    return $image_url;
+                }
+            }
+
+            if (is_string($value) && filter_var($value, FILTER_VALIDATE_URL)) {
+                return $value;
+            }
+        }
+
+        return '';
     }
 }
 
