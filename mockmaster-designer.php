@@ -175,9 +175,6 @@ class MockMasterDesigner {
         ?>
         <div class="wrap">
             <h1>MockMaster Designer</h1>
-            <div class="notice notice-info">
-                <p><strong>How to add this to product pages:</strong> Add the <code>[mockmaster_designer]</code> shortcode to your product description or any custom product tab that supports shortcodes. Developers can also place it in templates via <code>echo do_shortcode('[mockmaster_designer]');</code>.</p>
-            </div>
             <?php if ($updated) : ?>
                 <div class="notice notice-success is-dismissible">
                     <p>Settings updated.</p>
@@ -299,7 +296,6 @@ class MockMasterDesigner {
                                 <input type="file" accept="image/*" class="mockmaster-designer__upload-input" />
                                 <span>Choose image</span>
                             </label>
-                            <ul class="mockmaster-designer__upload-list" data-role="design-uploads"></ul>
                         </div>
                         <div class="mockmaster-designer__panel" data-panel="placement">
                             <p class="mockmaster-designer__panel-title">Choose placement</p>
