@@ -317,7 +317,10 @@
                 <span class="mockmaster-designer__upload-name">${entry.name}</span>
                 <span class="mockmaster-designer__upload-meta">${entry.placementLabel} · ${entry.dimensions} · ${formatPositionText(entry.position)}</span>
               </div>
-              <button type="button" class="mockmaster-designer__upload-edit" data-design="${entry.name}">Edit</button>
+              <div class="mockmaster-designer__upload-actions">
+                <button type="button" class="mockmaster-designer__upload-edit" data-design="${entry.name}">Edit</button>
+                <button type="button" class="mockmaster-designer__upload-remove" data-design="${entry.name}">Remove</button>
+              </div>
             </li>
           `;
         })
@@ -721,6 +724,32 @@
       $categories.filter('[data-category="placement"]').addClass('is-active');
       $panels.removeClass('is-active');
       $panels.filter('[data-panel="placement"]').addClass('is-active');
+    });
+
+    $root.on('click', '.mockmaster-designer__upload-remove', function () {
+      const designName = $(this).data('design');
+      const entryIndex = savedDesigns.findIndex((saved) => saved.name === designName);
+      if (entryIndex === -1) {
+        return;
+      }
+
+      const removedEntry = savedDesigns[entryIndex];
+      savedDesigns.splice(entryIndex, 1);
+
+      if (currentDesignName === removedEntry.name) {
+        currentDesignName = '';
+        currentPlacement = null;
+        currentPlacementSize = null;
+        currentDesignPosition = null;
+        isPlacementLocked = false;
+        updatePlacementStatus();
+        setPlacementLockState();
+        $placementButtons.removeClass('is-active');
+        $placementDimensions.text('--');
+      }
+
+      renderSavedDesigns();
+      renderAltViewOverlays();
     });
 
     $root.on('click', '.mockmaster-designer__alt-view', function () {

@@ -309,6 +309,22 @@
   cursor: pointer;
 }
 
+.mockmaster-designer__upload-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mockmaster-designer__upload-remove {
+  border: 1px solid #c62828;
+  background: #fff;
+  color: #c62828;
+  font-size: 11px;
+  padding: 6px 10px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
 .mockmaster-designer__upload-list li {
   margin-bottom: 4px;
 }
