@@ -742,6 +742,8 @@
         currentPlacementSize = null;
         currentDesignPosition = null;
         isPlacementLocked = false;
+        $designImage.removeAttr('src');
+        $designImage.removeClass('is-visible');
         updatePlacementStatus();
         setPlacementLockState();
         $placementButtons.removeClass('is-active');
