@@ -125,6 +125,7 @@ class MockMasterDesigner {
                             <input type="range" min="1" max="15" value="3.5" step="0.1" data-role="placement-size" />
                         </label>
                         <p class="mockmaster-designer__placement-dimensions" data-role="placement-dimensions">--</p>
+                        <button type="button" class="mockmaster-designer__placement-save" data-role="placement-save">Save placement</button>
                     </div>
                     <div class="mockmaster-designer__panel" data-panel="quantities">
                         <p class="mockmaster-designer__panel-title">Sizes & quantities</p>
@@ -332,6 +333,7 @@ class MockMasterDesigner {
                                 <input type="file" accept="image/*" class="mockmaster-designer__upload-input" />
                                 <span>Choose image</span>
                             </label>
+                            <ul class="mockmaster-designer__upload-list" data-role="design-uploads"></ul>
                         </div>
                         <div class="mockmaster-designer__panel" data-panel="placement">
                             <p class="mockmaster-designer__panel-title">Choose placement</p>
@@ -344,12 +346,13 @@ class MockMasterDesigner {
                                 <button type="button" data-placement="right-sleeve">Right Sleeve</button>
                                 <button type="button" data-placement="back">Back</button>
                             </div>
-                            <label class="mockmaster-designer__placement-slider">
-                                <span>Size</span>
-                                <input type="range" min="1" max="15" value="3.5" step="0.1" data-role="placement-size" />
-                            </label>
-                            <p class="mockmaster-designer__placement-dimensions" data-role="placement-dimensions">--</p>
-                        </div>
+                        <label class="mockmaster-designer__placement-slider">
+                            <span>Size</span>
+                            <input type="range" min="1" max="15" value="3.5" step="0.1" data-role="placement-size" />
+                        </label>
+                        <p class="mockmaster-designer__placement-dimensions" data-role="placement-dimensions">--</p>
+                        <button type="button" class="mockmaster-designer__placement-save" data-role="placement-save">Save placement</button>
+                    </div>
                         <div class="mockmaster-designer__panel" data-panel="quantities">
                             <p class="mockmaster-designer__panel-title">Sizes & quantities</p>
                             <div class="mockmaster-designer__quantities" data-role="quantity-options"></div>
