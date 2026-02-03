@@ -288,6 +288,10 @@
       $placementDimensions.text(getPlacementDimensionsText(currentPlacement));
     }
 
+    function setDesignImageVisibility(isVisible) {
+      $designImage.toggleClass('is-hidden', !isVisible);
+    }
+
     function ensureStageOverlayContainer() {
       let $overlayContainer = $stage.find('.mockmaster-designer__stage-overlays');
       if (!$overlayContainer.length) {
@@ -413,6 +417,10 @@
 
       if (category === 'design') {
         updateSelectQuantitiesButton();
+      }
+
+      if (category === 'placement') {
+        setDesignImageVisibility(true);
       }
     }
 
@@ -664,6 +672,7 @@
       reader.onload = function (loadEvent) {
         $designImage.attr('src', loadEvent.target.result);
         $designImage.addClass('is-visible');
+        setDesignImageVisibility(true);
         switchPanel('placement');
       };
       reader.readAsDataURL(file);
@@ -810,6 +819,7 @@
         $designImage.attr('src', entry.src);
         $designImage.addClass('is-visible');
       }
+      setDesignImageVisibility(true);
       updatePlacementStatus();
       setPlacementLockState();
       updatePlacementAvailability();
@@ -869,6 +879,7 @@
       setBaseImageForView(view);
       setAltViewButtonImages();
       renderStageOverlays();
+      setDesignImageVisibility(false);
     });
 
     $root.on('mockmaster:refresh-stage', function () {
