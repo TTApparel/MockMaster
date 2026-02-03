@@ -135,6 +135,7 @@ class MockMasterDesigner {
                             <input type="hidden" name="mockmaster_palette" data-role="color-palette-input" />
                             <input type="hidden" name="mockmaster_color_settings" data-role="color-settings-input" />
                         </div>
+                        <button type="button" class="mockmaster-designer__select-quantities mockmaster-designer__place-design is-hidden" data-role="place-design">Place Design</button>
                         <button type="button" class="mockmaster-designer__select-quantities is-hidden" data-role="select-quantities">Select Quantities</button>
                     </div>
                     <div class="mockmaster-designer__panel" data-panel="placement">
@@ -378,14 +379,16 @@ class MockMasterDesigner {
                                         <input type="number" min="1" max="8" step="1" value="8" data-role="color-count-control" />
                                     </label>
                                 </div>
-                                <div class="mockmaster-designer__color-counter-results">
-                                    <div class="mockmaster-designer__color-counter-palette" data-role="color-palette"></div>
-                                </div>
-                                <input type="hidden" name="mockmaster_estimated_colors" data-role="color-count-input" />
-                                <input type="hidden" name="mockmaster_palette" data-role="color-palette-input" />
-                                <input type="hidden" name="mockmaster_color_settings" data-role="color-settings-input" />
+                            <div class="mockmaster-designer__color-counter-results">
+                                <div class="mockmaster-designer__color-counter-palette" data-role="color-palette"></div>
                             </div>
+                            <input type="hidden" name="mockmaster_estimated_colors" data-role="color-count-input" />
+                            <input type="hidden" name="mockmaster_palette" data-role="color-palette-input" />
+                            <input type="hidden" name="mockmaster_color_settings" data-role="color-settings-input" />
                         </div>
+                        <button type="button" class="mockmaster-designer__select-quantities mockmaster-designer__place-design is-hidden" data-role="place-design">Place Design</button>
+                        <button type="button" class="mockmaster-designer__select-quantities is-hidden" data-role="select-quantities">Select Quantities</button>
+                    </div>
                         <div class="mockmaster-designer__panel" data-panel="placement">
                             <p class="mockmaster-designer__panel-title">Choose placement</p>
                             <p class="mockmaster-designer__placement-status" data-role="placement-status">None</p>
