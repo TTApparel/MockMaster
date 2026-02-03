@@ -19,11 +19,121 @@
     const $designImage = $root.find('.mockmaster-designer__design-image');
     const $uploadInput = $root.find('.mockmaster-designer__upload-input');
     const $uploadList = $root.find('[data-role="design-uploads"]');
+    const $altViewButtons = $root.find('.mockmaster-designer__alt-view');
     const $placementButtons = $root.find('.mockmaster-designer__placement-options button');
     const $stage = $root.find('.mockmaster-designer__image-stage');
     const uploadedDesigns = [];
     let isDragging = false;
     const dragNamespace = `.mockmasterDesigner${Math.random().toString(36).slice(2)}`;
+    const sideImage = data.ColorDirectSideImage || data.colorSideImage || '';
+    let currentView = 'front';
+    let currentColorImage = '';
+    const fallbackViewImages = {
+      front: '',
+      left: sideImage,
+      back: data.colorBackImage || '',
+      right: sideImage,
+    };
+
+    function deriveViewUrls(frontUrl) {
+      if (!frontUrl) {
+        return null;
+      }
+      const match = frontUrl.match(/_f_fm\.(jpg|jpeg|png)$/i);
+      if (!match) {
+        return null;
+      }
+      const extension = match[1];
+      const base = frontUrl.replace(/_f_fm\.(jpg|jpeg|png)$/i, '');
+      return {
+        front: frontUrl,
+        back: `${base}_b_fm.${extension}`,
+        leftPrimary: `${base}_d_fm.${extension}`,
+        leftFallback: `${base}_fm.${extension}`,
+      };
+    }
+
+    function applyImageWithFallback($image, primary, fallback) {
+      if (!primary) {
+        return;
+      }
+
+      $image.off('error.mockmaster').on('error.mockmaster', function () {
+        if (fallback && $image.attr('src') !== fallback) {
+          $image.attr('src', fallback);
+        }
+      });
+
+      $image.attr('src', primary);
+    }
+
+    function setBaseImageForView(view) {
+      const frontUrl = currentColorImage || data.defaultImage || '';
+      const viewUrls = deriveViewUrls(frontUrl);
+      const fallbackImage = frontUrl || '';
+
+      if (viewUrls) {
+        if (view === 'back') {
+          applyImageWithFallback($baseImage, viewUrls.back, fallbackImage);
+        } else if (view === 'left' || view === 'right') {
+          applyImageWithFallback($baseImage, viewUrls.leftPrimary, viewUrls.leftFallback || fallbackImage);
+        } else {
+          applyImageWithFallback($baseImage, viewUrls.front, fallbackImage);
+        }
+      } else {
+        const fallbackViewImage = fallbackViewImages[view] || fallbackImage;
+        applyImageWithFallback($baseImage, fallbackViewImage, fallbackImage);
+      }
+
+      if (view === 'right') {
+        $baseImage.addClass('is-flipped');
+      } else {
+        $baseImage.removeClass('is-flipped');
+      }
+    }
+
+    function setAltViewButtonImages() {
+      const stageWidth = $stage.outerWidth() || 0;
+      const thumbnailWidth = stageWidth ? stageWidth / 4 : 0;
+      const frontUrl = currentColorImage || data.defaultImage || '';
+      const viewUrls = deriveViewUrls(frontUrl);
+      const fallbackImage = frontUrl || '';
+
+      $altViewButtons.each(function () {
+        const $button = $(this);
+        const view = $button.data('view');
+        const $image = $button.find('.mockmaster-designer__alt-view-image');
+        let viewImage = fallbackViewImages[view] || fallbackImage;
+        let fallbackForView = fallbackImage;
+
+        if (viewUrls) {
+          if (view === 'back') {
+            viewImage = viewUrls.back;
+          } else if (view === 'left' || view === 'right') {
+            viewImage = viewUrls.leftPrimary;
+            fallbackForView = viewUrls.leftFallback || fallbackImage;
+          } else if (view === 'front') {
+            viewImage = viewUrls.front;
+          } else {
+            viewImage = viewUrls.front;
+          }
+        }
+
+        if (viewImage) {
+          applyImageWithFallback($image, viewImage, fallbackForView);
+        }
+
+        if (thumbnailWidth) {
+          $image.css('width', `${thumbnailWidth}px`);
+        }
+
+        if (view === 'right' && viewImage) {
+          $image.addClass('is-flipped');
+        } else {
+          $image.removeClass('is-flipped');
+        }
+      });
+    }
 
     function renderColors() {
       const colors = data.colors || {};
@@ -39,14 +149,12 @@
           const color = colors[key];
           const activeClass = index === 0 ? 'is-active' : '';
           const label = color.label || key;
+          const labelText = String(label).toUpperCase();
           const swatchImage = color.swatch;
           const styleAttr = swatchImage ? `style="background-image: url('${swatchImage}');"` : '';
           const imageClass = swatchImage ? 'has-image' : '';
           return `
-            <button type="button" class="mockmaster-designer__swatch ${activeClass} ${imageClass}" data-color="${key}" ${styleAttr} aria-label="${label}">
-              <span class="mockmaster-designer__swatch-text">${label}</span>
-              <span class="mockmaster-designer__swatch-tooltip">${label}</span>
-            </button>
+            <button type="button" class="mockmaster-designer__swatch ${activeClass} ${imageClass}" data-color="${key}" data-label="${labelText}" ${styleAttr} aria-label="${label}"></button>
           `;
         })
         .join('');
@@ -54,9 +162,11 @@
       $swatches.html(html);
       const firstKey = entries[0];
       if (firstKey && colors[firstKey] && colors[firstKey].image) {
-        $baseImage.attr('src', colors[firstKey].image);
+        currentColorImage = colors[firstKey].image;
+        setBaseImageForView(currentView);
       }
 
+      setAltViewButtonImages();
       renderQuantities(firstKey);
     }
 
@@ -73,9 +183,10 @@
       const rows = sizeKeys
         .map((size) => {
           const sizeData = sizes[size];
+          const sizeLabel = String(sizeData.label || size).toUpperCase();
           return `
             <div class="mockmaster-designer__quantity-row">
-              <span>${sizeData.label || size}</span>
+              <span>${sizeLabel}</span>
               <span>In stock: ${sizeData.stock}</span>
               <input type="number" min="0" placeholder="0" />
             </div>
@@ -102,9 +213,11 @@
 
       const color = data.colors && data.colors[colorKey];
       if (color && color.image) {
-        $baseImage.attr('src', color.image);
+        currentColorImage = color.image;
+        setBaseImageForView(currentView);
       }
 
+      setAltViewButtonImages();
       renderQuantities(colorKey);
     });
 
@@ -186,12 +299,39 @@
       });
     });
 
+    $root.on('click', '.mockmaster-designer__alt-view', function () {
+      const view = $(this).data('view');
+      $altViewButtons.removeClass('is-active');
+      $(this).addClass('is-active');
+      currentView = view;
+
+      setBaseImageForView(view);
+      setAltViewButtonImages();
+    });
+
     renderColors();
+    setAltViewButtonImages();
   }
 
   $(document).ready(function () {
     $('.mockmaster-designer').each(function () {
       initDesigner($(this));
+    });
+  });
+
+  $(window).on('resize', function () {
+    $('.mockmaster-designer').each(function () {
+      const $root = $(this);
+      const $stage = $root.find('.mockmaster-designer__image-stage');
+      const stageWidth = $stage.outerWidth() || 0;
+      const thumbnailWidth = stageWidth ? stageWidth / 4 : 0;
+
+      $root.find('.mockmaster-designer__alt-view-image').each(function () {
+        const $image = $(this);
+        if (thumbnailWidth) {
+          $image.css('width', `${thumbnailWidth}px`);
+        }
+      });
     });
   });
 })(jQuery);
