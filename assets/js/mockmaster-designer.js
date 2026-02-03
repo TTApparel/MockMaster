@@ -2,12 +2,12 @@
   const data = window.MockMasterDesignerData || {};
 
   const placements = {
-    'left-chest': { top: '32%', left: '56%', width: '22%', size: { default: 3.5, min: 1, max: 6 } },
-    'right-chest': { top: '32%', left: '38%', width: '22%', size: { default: 3.5, min: 1, max: 6 } },
-    'full-chest': { top: '34%', left: '50%', width: '42%', size: { default: 10, min: 2, maxWidth: 12, maxHeight: 15 } },
-    'left-sleeve': { top: '32%', left: '42%', width: '18%', size: { default: 3.5, min: 1, max: 6 } },
-    'right-sleeve': { top: '32%', left: '58%', width: '18%', size: { default: 3.5, min: 1, max: 6 } },
-    back: { top: '38%', left: '50%', width: '40%', size: { default: 10, min: 2, maxWidth: 12, maxHeight: 15 } },
+    'left-chest': { top: '32%', left: '56%', width: '22%' },
+    'right-chest': { top: '32%', left: '38%', width: '22%' },
+    'full-chest': { top: '34%', left: '50%', width: '42%' },
+    'left-sleeve': { top: '28%', left: '49%', width: '18%' },
+    'right-sleeve': { top: '28%', left: '51%', width: '18%' },
+    back: { top: '38%', left: '50%', width: '40%' },
   };
 
   function initDesigner($root) {
