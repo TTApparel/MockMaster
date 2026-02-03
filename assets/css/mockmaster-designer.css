@@ -309,6 +309,10 @@
   gap: 10px;
 }
 
+.mockmaster-designer__color-counter.is-hidden {
+  display: none;
+}
+
 .mockmaster-designer__color-counter-summary {
   display: flex;
   justify-content: space-between;

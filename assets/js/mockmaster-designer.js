@@ -443,6 +443,7 @@
     let lastColorCounterCanvas = null;
     let lastColorCounterFile = null;
     let currentColorPalette = [];
+    let isColorCounterVisible = false;
 
     function deriveViewUrls(frontUrl) {
       if (!frontUrl) {
@@ -780,6 +781,14 @@
       $placeDesign.toggleClass('is-hidden', !hasDesign);
     }
 
+    function updateColorCounterVisibility() {
+      if (!$colorCounter.length) {
+        return;
+      }
+      const hasDesign = Boolean($designImage.attr('src'));
+      $colorCounter.toggleClass('is-hidden', !(hasDesign && isColorCounterVisible));
+    }
+
     function switchPanel(category) {
       $categories.removeClass('is-active');
       $categories.filter(`[data-category="${category}"]`).addClass('is-active');
@@ -790,6 +799,7 @@
       if (category === 'design') {
         updateSelectQuantitiesButton();
         updatePlaceDesignButton();
+        updateColorCounterVisibility();
       }
 
       if (category === 'placement') {
@@ -1325,6 +1335,8 @@
         $designImage.addClass('is-visible');
         setDesignImageVisibility(true);
         updatePlaceDesignButton();
+        isColorCounterVisible = true;
+        updateColorCounterVisibility();
 
         if ($colorCounter.length) {
           lastColorCounterFile = file;
@@ -1460,10 +1472,12 @@
 
       isPlacementLocked = true;
       setPlacementLockState();
+      isColorCounterVisible = false;
       renderSavedDesigns();
       renderAltViewOverlays();
       switchPanel('design');
       updateSelectQuantitiesButton();
+      updateColorCounterVisibility();
       updatePlacementAvailability();
       renderStageOverlays();
     });
@@ -1496,6 +1510,8 @@
       updatePlacementStatus();
       setPlacementLockState();
       updatePlacementAvailability();
+      isColorCounterVisible = true;
+      updateColorCounterVisibility();
 
       $placementButtons.removeClass('is-active');
       $placementButtons.filter(`[data-placement="${entry.placement}"]`).addClass('is-active');
@@ -1536,6 +1552,8 @@
         $placementButtons.removeClass('is-active');
         $placementDimensions.text('--');
         updatePlaceDesignButton();
+        isColorCounterVisible = false;
+        updateColorCounterVisibility();
       }
 
       renderSavedDesigns();
@@ -1563,6 +1581,7 @@
     renderColors();
     setAltViewButtonImages();
     updatePlacementStatus();
+    updateColorCounterVisibility();
     renderSavedDesigns();
     setPlacementLockState();
     renderStageOverlays();

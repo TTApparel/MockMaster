@@ -116,7 +116,7 @@ class MockMasterDesigner {
                             <span>Choose image</span>
                         </label>
                         <ul class="mockmaster-designer__upload-list" data-role="design-uploads"></ul>
-                        <div class="mockmaster-designer__color-counter" data-role="color-counter">
+                        <div class="mockmaster-designer__color-counter is-hidden" data-role="color-counter">
                             <p class="mockmaster-designer__panel-subtitle">Approximate color count</p>
                             <div class="mockmaster-designer__color-counter-summary">
                                 <span>Estimated print colors:</span>
@@ -367,7 +367,7 @@ class MockMasterDesigner {
                                 <span>Choose image</span>
                             </label>
                             <ul class="mockmaster-designer__upload-list" data-role="design-uploads"></ul>
-                            <div class="mockmaster-designer__color-counter" data-role="color-counter">
+                            <div class="mockmaster-designer__color-counter is-hidden" data-role="color-counter">
                                 <p class="mockmaster-designer__panel-subtitle">Approximate color count</p>
                                 <div class="mockmaster-designer__color-counter-summary">
                                     <span>Estimated print colors:</span>
