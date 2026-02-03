@@ -92,6 +92,10 @@
   object-fit: contain;
 }
 
+.mockmaster-designer__base-image.is-flipped {
+  transform: scaleX(-1);
+}
+
 .mockmaster-designer__design-image {
   width: 40%;
   opacity: 0;

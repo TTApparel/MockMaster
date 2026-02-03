@@ -19,11 +19,17 @@
     const $designImage = $root.find('.mockmaster-designer__design-image');
     const $uploadInput = $root.find('.mockmaster-designer__upload-input');
     const $uploadList = $root.find('[data-role="design-uploads"]');
+    const $altViewButtons = $root.find('.mockmaster-designer__alt-view');
     const $placementButtons = $root.find('.mockmaster-designer__placement-options button');
     const $stage = $root.find('.mockmaster-designer__image-stage');
     const uploadedDesigns = [];
     let isDragging = false;
     const dragNamespace = `.mockmasterDesigner${Math.random().toString(36).slice(2)}`;
+    const altViewImages = {
+      left: data.colorSideImage || '',
+      back: data.colorBackImage || '',
+      right: data.colorSideImage || '',
+    };
 
     function renderColors() {
       const colors = data.colors || {};
@@ -102,6 +108,8 @@
       if (color && color.image) {
         $baseImage.attr('src', color.image);
       }
+      $baseImage.removeClass('is-flipped');
+      $altViewButtons.removeClass('is-active');
 
       renderQuantities(colorKey);
     });
@@ -182,6 +190,23 @@
         width: placementData.width,
         transform: 'translate(-50%, -50%)',
       });
+    });
+
+    $root.on('click', '.mockmaster-designer__alt-view', function () {
+      const view = $(this).data('view');
+      $altViewButtons.removeClass('is-active');
+      $(this).addClass('is-active');
+
+      const viewImage = altViewImages[view];
+      if (viewImage) {
+        $baseImage.attr('src', viewImage);
+      }
+
+      if (view === 'right' && altViewImages.right) {
+        $baseImage.addClass('is-flipped');
+      } else {
+        $baseImage.removeClass('is-flipped');
+      }
     });
 
     renderColors();
