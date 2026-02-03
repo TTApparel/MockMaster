@@ -288,6 +288,48 @@
       $placementDimensions.text(getPlacementDimensionsText(currentPlacement));
     }
 
+    function ensureStageOverlayContainer() {
+      let $overlayContainer = $stage.find('.mockmaster-designer__stage-overlays');
+      if (!$overlayContainer.length) {
+        $overlayContainer = $('<div class="mockmaster-designer__stage-overlays" aria-hidden="true"></div>');
+        $stage.append($overlayContainer);
+      }
+      return $overlayContainer;
+    }
+
+    function renderStageOverlays() {
+      const $overlayContainer = ensureStageOverlayContainer();
+      $overlayContainer.empty();
+
+      const stageWidth = $stage.outerWidth() || 0;
+      const stageHeight = $stage.outerHeight() || 0;
+      if (!stageWidth || !stageHeight) {
+        return;
+      }
+
+      savedDesigns.forEach((entry) => {
+        if (entry.view !== currentView || !entry.src) {
+          return;
+        }
+        if (entry.name === currentDesignName && $designImage.attr('src')) {
+          return;
+        }
+
+        const position = entry.position || { left: 50, top: 50 };
+        const widthPercent = entry.widthPercent || 0;
+        const widthPx = (widthPercent / 100) * stageWidth;
+
+        const $overlay = $('<img class="mockmaster-designer__stage-overlay" alt="" />');
+        $overlay.attr('src', entry.src);
+        $overlay.css({
+          left: `${position.left}%`,
+          top: `${position.top}%`,
+          width: `${widthPx}px`,
+        });
+        $overlayContainer.append($overlay);
+      });
+    }
+
     function setPlacementLockState() {
       const locked = isPlacementLocked;
       $placementButtons.prop('disabled', locked);
@@ -394,6 +436,7 @@
       $altViewButtons.filter(`[data-view="${nextView}"]`).addClass('is-active');
       setBaseImageForView(nextView);
       setAltViewButtonImages();
+      renderStageOverlays();
     }
 
     function setBaseImageForView(view) {
@@ -419,6 +462,8 @@
       } else {
         $baseImage.removeClass('is-flipped');
       }
+
+      renderStageOverlays();
     }
 
     function setAltViewButtonImages() {
@@ -464,6 +509,7 @@
       });
 
       renderAltViewOverlays();
+      renderStageOverlays();
     }
 
     function renderAltViewOverlays() {
@@ -741,6 +787,7 @@
       switchPanel('design');
       updateSelectQuantitiesButton();
       updatePlacementAvailability();
+      renderStageOverlays();
     });
 
     $root.on('click', '[data-role="select-quantities"]', function () {
@@ -775,6 +822,7 @@
       updatePlacementDimensions();
       setViewForPlacement(entry.placement);
       renderAltViewOverlays();
+      renderStageOverlays();
 
       $categories.removeClass('is-active');
       $categories.filter('[data-category="placement"]').addClass('is-active');
@@ -809,6 +857,7 @@
       renderSavedDesigns();
       renderAltViewOverlays();
       updatePlacementAvailability();
+      renderStageOverlays();
     });
 
     $root.on('click', '.mockmaster-designer__alt-view', function () {
@@ -819,6 +868,11 @@
 
       setBaseImageForView(view);
       setAltViewButtonImages();
+      renderStageOverlays();
+    });
+
+    $root.on('mockmaster:refresh-stage', function () {
+      renderStageOverlays();
     });
 
     renderColors();
@@ -826,6 +880,7 @@
     updatePlacementStatus();
     renderSavedDesigns();
     setPlacementLockState();
+    renderStageOverlays();
   }
 
   $(document).ready(function () {
@@ -847,6 +902,8 @@
           $image.css('width', `${thumbnailWidth}px`);
         }
       });
+
+      $root.trigger('mockmaster:refresh-stage');
     });
   });
 })(jQuery);
