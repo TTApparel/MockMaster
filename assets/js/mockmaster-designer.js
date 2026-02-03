@@ -58,7 +58,7 @@
     const $designImage = $root.find('.mockmaster-designer__design-image');
     const $uploadInput = $root.find('.mockmaster-designer__upload-input');
     const $uploadList = $root.find('[data-role="design-uploads"]');
-    const $selectQuantities = $root.find('[data-role="select-quantities"]');
+    let $selectQuantities = $root.find('[data-role="select-quantities"]');
     const $altViewButtons = $root.find('.mockmaster-designer__alt-view');
     const $placementButtons = $root.find('.mockmaster-designer__placement-options button');
     const $placementStatus = $root.find('[data-role="placement-status"]');
@@ -334,7 +334,13 @@
 
     function updateSelectQuantitiesButton() {
       if (!$selectQuantities.length) {
-        return;
+        const $designPanel = $panels.filter('[data-panel="design"]');
+        if ($designPanel.length) {
+          $selectQuantities = $('<button type="button" class="mockmaster-designer__select-quantities is-hidden" data-role="select-quantities">Select Quantities</button>');
+          $designPanel.append($selectQuantities);
+        } else {
+          return;
+        }
       }
 
       const hasUploads = $uploadList.find('.mockmaster-designer__upload-item').length > 0;
@@ -719,7 +725,7 @@
       updateSelectQuantitiesButton();
     });
 
-    $selectQuantities.on('click', function () {
+    $root.on('click', '[data-role="select-quantities"]', function () {
       switchPanel('quantities');
     });
 
