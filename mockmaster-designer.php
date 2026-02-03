@@ -111,6 +111,7 @@ class MockMasterDesigner {
                     </div>
                     <div class="mockmaster-designer__panel" data-panel="placement">
                         <p class="mockmaster-designer__panel-title">Choose placement</p>
+                        <p class="mockmaster-designer__placement-status" data-role="placement-status">Placing: none</p>
                         <div class="mockmaster-designer__placement-options">
                             <button type="button" data-placement="left-chest">Left Chest</button>
                             <button type="button" data-placement="right-chest">Right Chest</button>
@@ -119,6 +120,10 @@ class MockMasterDesigner {
                             <button type="button" data-placement="right-sleeve">Right Sleeve</button>
                             <button type="button" data-placement="back">Back</button>
                         </div>
+                        <label class="mockmaster-designer__placement-slider">
+                            <span>Size</span>
+                            <input type="range" min="50" max="150" value="100" step="1" data-role="placement-size" />
+                        </label>
                     </div>
                     <div class="mockmaster-designer__panel" data-panel="quantities">
                         <p class="mockmaster-designer__panel-title">Sizes & quantities</p>
@@ -325,6 +330,7 @@ class MockMasterDesigner {
                         </div>
                         <div class="mockmaster-designer__panel" data-panel="placement">
                             <p class="mockmaster-designer__panel-title">Choose placement</p>
+                            <p class="mockmaster-designer__placement-status" data-role="placement-status">Placing: none</p>
                             <div class="mockmaster-designer__placement-options">
                                 <button type="button" data-placement="left-chest">Left Chest</button>
                                 <button type="button" data-placement="right-chest">Right Chest</button>
@@ -333,6 +339,10 @@ class MockMasterDesigner {
                                 <button type="button" data-placement="right-sleeve">Right Sleeve</button>
                                 <button type="button" data-placement="back">Back</button>
                             </div>
+                            <label class="mockmaster-designer__placement-slider">
+                                <span>Size</span>
+                                <input type="range" min="50" max="150" value="100" step="1" data-role="placement-size" />
+                            </label>
                         </div>
                         <div class="mockmaster-designer__panel" data-panel="quantities">
                             <p class="mockmaster-designer__panel-title">Sizes & quantities</p>

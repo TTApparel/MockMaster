@@ -175,7 +175,8 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, 53px);
   grid-auto-rows: 39px;
-  gap: 8px;
+  justify-content: space-evenly;
+  gap: 4px;
 }
 
 .mockmaster-designer__swatch {
@@ -271,6 +272,14 @@
   gap: 8px;
 }
 
+.mockmaster-designer__placement-status {
+  margin: 0 0 12px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #444;
+}
+
 .mockmaster-designer__placement-options button {
   border: 1px solid var(--mm-arc-color, #1a1a1a);
   background: var(--mm-button-bg, #fff);
@@ -283,6 +292,21 @@
 .mockmaster-designer__placement-options button.is-active {
   background: var(--mm-category-active-bg, #1a1a1a);
   color: var(--mm-category-active-text, #fff);
+}
+
+.mockmaster-designer__placement-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #444;
+}
+
+.mockmaster-designer__placement-slider input[type='range'] {
+  width: 100%;
 }
 
 .mockmaster-designer__quantities {

@@ -2,11 +2,11 @@
   const data = window.MockMasterDesignerData || {};
 
   const placements = {
-    'left-chest': { top: '32%', left: '38%', width: '22%' },
-    'right-chest': { top: '32%', left: '56%', width: '22%' },
+    'left-chest': { top: '32%', left: '56%', width: '22%' },
+    'right-chest': { top: '32%', left: '38%', width: '22%' },
     'full-chest': { top: '34%', left: '50%', width: '42%' },
-    'left-sleeve': { top: '40%', left: '22%', width: '18%' },
-    'right-sleeve': { top: '40%', left: '78%', width: '18%' },
+    'left-sleeve': { top: '32%', left: '42%', width: '18%' },
+    'right-sleeve': { top: '32%', left: '58%', width: '18%' },
     back: { top: '38%', left: '50%', width: '40%' },
   };
 
@@ -21,6 +21,8 @@
     const $uploadList = $root.find('[data-role="design-uploads"]');
     const $altViewButtons = $root.find('.mockmaster-designer__alt-view');
     const $placementButtons = $root.find('.mockmaster-designer__placement-options button');
+    const $placementStatus = $root.find('[data-role="placement-status"]');
+    const $placementSize = $root.find('[data-role="placement-size"]');
     const $stage = $root.find('.mockmaster-designer__image-stage');
     const uploadedDesigns = [];
     let isDragging = false;
@@ -28,6 +30,9 @@
     const sideImage = data.ColorDirectSideImage || data.colorSideImage || '';
     let currentView = 'front';
     let currentColorImage = '';
+    let currentDesignName = '';
+    let currentPlacement = null;
+    let placementScale = 1;
     const fallbackViewImages = {
       front: '',
       left: sideImage,
@@ -65,6 +70,31 @@
       });
 
       $image.attr('src', primary);
+    }
+
+    function updatePlacementStatus() {
+      if (!$placementStatus.length) {
+        return;
+      }
+
+      $placementStatus.text(currentDesignName ? `Placing: ${currentDesignName}` : 'Placing: none');
+    }
+
+    function applyPlacement(placement) {
+      const placementData = placements[placement];
+      if (!placementData) {
+        return;
+      }
+
+      const baseWidth = parseFloat(placementData.width);
+      const scaledWidth = Number.isNaN(baseWidth) ? placementData.width : `${baseWidth * placementScale}%`;
+
+      $designImage.css({
+        top: placementData.top,
+        left: placementData.left,
+        width: scaledWidth,
+        transform: 'translate(-50%, -50%)',
+      });
     }
 
     function setBaseImageForView(view) {
@@ -230,6 +260,8 @@
       }
 
       uploadedDesigns.push(file.name);
+      currentDesignName = file.name;
+      updatePlacementStatus();
       if ($uploadList.length) {
         const listItems = uploadedDesigns.map((name) => `<li>${name}</li>`).join('');
         $uploadList.html(listItems);
@@ -288,17 +320,8 @@
       $placementButtons.removeClass('is-active');
       $(this).addClass('is-active');
 
-      const placementData = placements[placement];
-      if (!placementData) {
-        return;
-      }
-
-      $designImage.css({
-        top: placementData.top,
-        left: placementData.left,
-        width: placementData.width,
-        transform: 'translate(-50%, -50%)',
-      });
+      currentPlacement = placement;
+      applyPlacement(placement);
 
       let nextView = 'front';
       if (placement === 'left-sleeve') {
@@ -314,6 +337,18 @@
       $altViewButtons.filter(`[data-view="${nextView}"]`).addClass('is-active');
       setBaseImageForView(nextView);
       setAltViewButtonImages();
+    });
+
+    $placementSize.on('input change', function () {
+      const value = parseFloat($(this).val());
+      if (Number.isNaN(value)) {
+        return;
+      }
+
+      placementScale = value / 100;
+      if (currentPlacement) {
+        applyPlacement(currentPlacement);
+      }
     });
 
     $root.on('click', '.mockmaster-designer__alt-view', function () {
@@ -338,6 +373,7 @@
 
     renderColors();
     setAltViewButtonImages();
+    updatePlacementStatus();
   }
 
   $(document).ready(function () {
