@@ -1060,28 +1060,24 @@
     }
 
     function renderQuantizedPreview(workingCanvas, palette, settings) {
-      if (!$colorPreview.length) {
-        return;
-      }
-
       const canvas = $colorPreview.get(0);
       if (!canvas) {
-        return;
+        return null;
       }
 
       const previewContext = canvas.getContext('2d');
       if (!previewContext) {
-        return;
+        return null;
       }
 
       if (!palette.length) {
         previewContext.clearRect(0, 0, canvas.width, canvas.height);
-        return;
+        return null;
       }
 
       const previewCanvas = createPreviewCanvasFromWorkingCanvas(workingCanvas, settings.max_preview_dim);
       if (!previewCanvas) {
-        return;
+        return null;
       }
 
       canvas.width = previewCanvas.width;
@@ -1122,6 +1118,7 @@
       }
 
       previewContext.putImageData(previewData, 0, 0);
+      return canvas.toDataURL('image/png');
     }
 
     function updateColorCounterOutputs(result, settings) {
@@ -1201,7 +1198,12 @@
       };
 
       updateColorCounterOutputs(result, settings);
-      renderQuantizedPreview(workingCanvas, palette, settings);
+      const previewDataUrl = renderQuantizedPreview(workingCanvas, palette, settings);
+      if (previewDataUrl && $designImage.length) {
+        $designImage.attr('src', previewDataUrl);
+        $designImage.addClass('is-visible');
+        setDesignImageVisibility(true);
+      }
     }
 
     $root.on('click', '.mockmaster-designer__category', function () {
