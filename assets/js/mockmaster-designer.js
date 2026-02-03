@@ -4,7 +4,7 @@
   const placements = {
     'left-chest': {
       top: '32%',
-      left: '56%',
+      left: '62%',
       width: '18%',
       size: { min: 2, max: 6, default: 4.5 },
     },
