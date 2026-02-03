@@ -778,7 +778,7 @@
         return;
       }
       const hasDesign = Boolean($designImage.attr('src'));
-      $placeDesign.toggleClass('is-hidden', !hasDesign);
+      $placeDesign.toggleClass('is-hidden', !(hasDesign && isColorCounterVisible));
     }
 
     function updateColorCounterVisibility() {
