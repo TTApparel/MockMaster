@@ -238,6 +238,7 @@
 .mockmaster-designer__swatch.is-active {
   background: var(--mm-swatch-active-bg, #1a1a1a);
   color: var(--mm-swatch-active-text, #fff);
+  box-shadow: 0 0 0 2px var(--mm-swatch-active-bg, #1a1a1a);
 }
 
 .mockmaster-designer__upload {

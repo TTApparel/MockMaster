@@ -125,9 +125,10 @@
       const rows = sizeKeys
         .map((size) => {
           const sizeData = sizes[size];
+          const sizeLabel = String(sizeData.label || size).toUpperCase();
           return `
             <div class="mockmaster-designer__quantity-row">
-              <span>${sizeData.label || size}</span>
+              <span>${sizeLabel}</span>
               <span>In stock: ${sizeData.stock}</span>
               <input type="number" min="0" placeholder="0" />
             </div>
