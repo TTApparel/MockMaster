@@ -23,6 +23,7 @@
     const $placementButtons = $root.find('.mockmaster-designer__placement-options button');
     const $placementStatus = $root.find('[data-role="placement-status"]');
     const $placementSize = $root.find('[data-role="placement-size"]');
+    const $placementDimensions = $root.find('[data-role="placement-dimensions"]');
     const $stage = $root.find('.mockmaster-designer__image-stage');
     const uploadedDesigns = [];
     let isDragging = false;
@@ -32,7 +33,7 @@
     let currentColorImage = '';
     let currentDesignName = '';
     let currentPlacement = null;
-    let placementScale = 1;
+    let currentPlacementSize = null;
     const fallbackViewImages = {
       front: '',
       left: sideImage,
@@ -77,7 +78,62 @@
         return;
       }
 
-      $placementStatus.text(currentDesignName ? `Placing: ${currentDesignName}` : 'Placing: none');
+      $placementStatus.text(currentDesignName ? currentDesignName : 'None');
+    }
+
+    function getDesignAspectRatio() {
+      const image = $designImage.get(0);
+      if (image && image.naturalWidth && image.naturalHeight) {
+        return image.naturalWidth / image.naturalHeight;
+      }
+      return 1;
+    }
+
+    function getPlacementSizeConfig(placement) {
+      return placements[placement] ? placements[placement].size : null;
+    }
+
+    function getPlacementSizeBounds(placement) {
+      const config = getPlacementSizeConfig(placement);
+      if (!config) {
+        return null;
+      }
+
+      const aspect = getDesignAspectRatio();
+      const max =
+        config.max ??
+        (aspect >= 1 ? config.maxWidth ?? config.default : config.maxHeight ?? config.default);
+      const min =
+        config.min && aspect < 1 && config.min === 2 && config.maxWidth && config.maxHeight
+          ? Math.max(config.min / aspect, config.min)
+          : config.min;
+
+      return {
+        min,
+        max,
+        default: config.default,
+      };
+    }
+
+    function updatePlacementSlider(placement) {
+      if (!$placementSize.length) {
+        return;
+      }
+
+      const bounds = getPlacementSizeBounds(placement);
+      if (!bounds) {
+        return;
+      }
+
+      const nextSize = currentPlacementSize ?? bounds.default;
+      const clampedSize = Math.min(bounds.max, Math.max(bounds.min, nextSize));
+      currentPlacementSize = clampedSize;
+      $placementSize.attr({
+        min: bounds.min,
+        max: bounds.max,
+        step: 0.1,
+      });
+      $placementSize.val(clampedSize);
     }
 
     function applyPlacement(placement) {
@@ -87,7 +143,10 @@
       }
 
       const baseWidth = parseFloat(placementData.width);
-      const scaledWidth = Number.isNaN(baseWidth) ? placementData.width : `${baseWidth * placementScale}%`;
+      const sizeConfig = getPlacementSizeConfig(placement);
+      const targetSize = currentPlacementSize ?? (sizeConfig ? sizeConfig.default : null);
+      const sizeRatio = sizeConfig && targetSize ? targetSize / sizeConfig.default : 1;
+      const scaledWidth = Number.isNaN(baseWidth) ? placementData.width : `${baseWidth * sizeRatio}%`;
 
       $designImage.css({
         top: placementData.top,
@@ -95,6 +154,33 @@
         width: scaledWidth,
         transform: 'translate(-50%, -50%)',
       });
+    }
+
+    function updatePlacementDimensions() {
+      if (!$placementDimensions.length || !currentPlacement) {
+        return;
+      }
+
+      const sizeConfig = getPlacementSizeConfig(currentPlacement);
+      if (!sizeConfig) {
+        $placementDimensions.text('--');
+        return;
+      }
+
+      const size = currentPlacementSize ?? sizeConfig.default;
+      const aspect = getDesignAspectRatio();
+      let width = size;
+      let height = size;
+
+      if (aspect >= 1) {
+        width = size;
+        height = size / aspect;
+      } else {
+        height = size;
+        width = size * aspect;
+      }
+
+      $placementDimensions.text(`Approx. size: ${width.toFixed(1)}" W x ${height.toFixed(1)}" H`);
     }
 
     function setBaseImageForView(view) {
@@ -275,6 +361,14 @@
       reader.readAsDataURL(file);
     });
 
+    $designImage.on('load', function () {
+      if (currentPlacement) {
+        updatePlacementSlider(currentPlacement);
+        applyPlacement(currentPlacement);
+        updatePlacementDimensions();
+      }
+    });
+
     $designImage.on('mousedown', function (event) {
       if (!$designImage.attr('src')) {
         return;
@@ -321,7 +415,10 @@
       $(this).addClass('is-active');
 
       currentPlacement = placement;
+      currentPlacementSize = null;
+      updatePlacementSlider(placement);
       applyPlacement(placement);
+      updatePlacementDimensions();
 
       let nextView = 'front';
       if (placement === 'left-sleeve') {
@@ -345,9 +442,10 @@
         return;
       }
 
-      placementScale = value / 100;
+      currentPlacementSize = value;
       if (currentPlacement) {
         applyPlacement(currentPlacement);
+        updatePlacementDimensions();
       }
     });
 

@@ -307,6 +307,13 @@
 
 .mockmaster-designer__placement-slider input[type='range'] {
   width: 100%;
+  accent-color: var(--mm-slider-color, #000);
+}
+
+.mockmaster-designer__placement-dimensions {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #666;
 }
 
 .mockmaster-designer__quantities {
