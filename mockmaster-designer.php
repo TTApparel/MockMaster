@@ -111,6 +111,7 @@ class MockMasterDesigner {
                     </div>
                     <div class="mockmaster-designer__panel" data-panel="placement">
                         <p class="mockmaster-designer__panel-title">Choose placement</p>
+                        <p class="mockmaster-designer__placement-status" data-role="placement-status">None</p>
                         <div class="mockmaster-designer__placement-options">
                             <button type="button" data-placement="left-chest">Left Chest</button>
                             <button type="button" data-placement="right-chest">Right Chest</button>
@@ -119,6 +120,11 @@ class MockMasterDesigner {
                             <button type="button" data-placement="right-sleeve">Right Sleeve</button>
                             <button type="button" data-placement="back">Back</button>
                         </div>
+                        <label class="mockmaster-designer__placement-slider">
+                            <span>Size</span>
+                            <input type="range" min="1" max="15" value="3.5" step="0.1" data-role="placement-size" />
+                        </label>
+                        <p class="mockmaster-designer__placement-dimensions" data-role="placement-dimensions">--</p>
                     </div>
                     <div class="mockmaster-designer__panel" data-panel="quantities">
                         <p class="mockmaster-designer__panel-title">Sizes & quantities</p>
@@ -266,6 +272,10 @@ class MockMasterDesigner {
                         <th scope="row"><label for="mockmaster-button-text">Primary button text</label></th>
                         <td><input type="color" id="mockmaster-button-text" name="settings[button_text]" value="<?php echo esc_attr($settings['button_text']); ?>" /></td>
                     </tr>
+                    <tr>
+                        <th scope="row"><label for="mockmaster-slider-color">Slider color</label></th>
+                        <td><input type="color" id="mockmaster-slider-color" name="settings[slider_color]" value="<?php echo esc_attr($settings['slider_color']); ?>" /></td>
+                    </tr>
                 </table>
 
                 <?php submit_button('Save changes'); ?>
@@ -325,6 +335,7 @@ class MockMasterDesigner {
                         </div>
                         <div class="mockmaster-designer__panel" data-panel="placement">
                             <p class="mockmaster-designer__panel-title">Choose placement</p>
+                            <p class="mockmaster-designer__placement-status" data-role="placement-status">None</p>
                             <div class="mockmaster-designer__placement-options">
                                 <button type="button" data-placement="left-chest">Left Chest</button>
                                 <button type="button" data-placement="right-chest">Right Chest</button>
@@ -333,6 +344,11 @@ class MockMasterDesigner {
                                 <button type="button" data-placement="right-sleeve">Right Sleeve</button>
                                 <button type="button" data-placement="back">Back</button>
                             </div>
+                            <label class="mockmaster-designer__placement-slider">
+                                <span>Size</span>
+                                <input type="range" min="1" max="15" value="3.5" step="0.1" data-role="placement-size" />
+                            </label>
+                            <p class="mockmaster-designer__placement-dimensions" data-role="placement-dimensions">--</p>
                         </div>
                         <div class="mockmaster-designer__panel" data-panel="quantities">
                             <p class="mockmaster-designer__panel-title">Sizes & quantities</p>
@@ -440,6 +456,7 @@ class MockMasterDesigner {
             'accent' => '#e01b24',
             'button_bg' => '#ffffff',
             'button_text' => '#e01b24',
+            'slider_color' => '#000000',
         );
     }
 
@@ -454,7 +471,7 @@ class MockMasterDesigner {
         $settings = $this->get_settings();
 
         return sprintf(
-            '--mm-text-color: %1$s; --mm-stage-bg: %2$s; --mm-arc-color: %3$s; --mm-panel-bg: %4$s; --mm-panel-border: %5$s; --mm-category-bg: %6$s; --mm-category-active-bg: %7$s; --mm-category-active-text: %8$s; --mm-swatch-active-bg: %9$s; --mm-swatch-active-text: %10$s; --mm-accent: %11$s; --mm-button-bg: %12$s; --mm-button-text: %13$s;',
+            '--mm-text-color: %1$s; --mm-stage-bg: %2$s; --mm-arc-color: %3$s; --mm-panel-bg: %4$s; --mm-panel-border: %5$s; --mm-category-bg: %6$s; --mm-category-active-bg: %7$s; --mm-category-active-text: %8$s; --mm-swatch-active-bg: %9$s; --mm-swatch-active-text: %10$s; --mm-accent: %11$s; --mm-button-bg: %12$s; --mm-button-text: %13$s; --mm-slider-color: %14$s;',
             $settings['text_color'],
             $settings['stage_bg'],
             $settings['arc_color'],
@@ -467,7 +484,8 @@ class MockMasterDesigner {
             $settings['swatch_active_text'],
             $settings['accent'],
             $settings['button_bg'],
-            $settings['button_text']
+            $settings['button_text'],
+            $settings['slider_color']
         );
     }
 
