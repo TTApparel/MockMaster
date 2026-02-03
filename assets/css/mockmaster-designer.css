@@ -103,6 +103,10 @@
   cursor: move;
 }
 
+.mockmaster-designer__design-image.is-locked {
+  cursor: default;
+}
+
 .mockmaster-designer__design-image.is-visible {
   opacity: 1;
 }

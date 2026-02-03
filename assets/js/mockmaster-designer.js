@@ -75,6 +75,7 @@
     let currentPlacement = null;
     let currentPlacementSize = null;
     let isPlacementLocked = false;
+    let currentDesignPosition = null;
     const fallbackViewImages = {
       front: '',
       left: sideImage,
@@ -223,6 +224,47 @@
       });
     }
 
+    function getDesignPositionPercent() {
+      const stageWidth = $stage.outerWidth() || 0;
+      const stageHeight = $stage.outerHeight() || 0;
+      const leftValue = $designImage.css('left') || '0';
+      const topValue = $designImage.css('top') || '0';
+      const leftIsPercent = leftValue.includes('%');
+      const topIsPercent = topValue.includes('%');
+      const leftNumber = parseFloat(leftValue) || 0;
+      const topNumber = parseFloat(topValue) || 0;
+
+      const leftPercent =
+        leftIsPercent || !stageWidth ? leftNumber : Math.min(100, Math.max(0, (leftNumber / stageWidth) * 100));
+      const topPercent =
+        topIsPercent || !stageHeight ? topNumber : Math.min(100, Math.max(0, (topNumber / stageHeight) * 100));
+
+      return {
+        left: leftPercent,
+        top: topPercent,
+      };
+    }
+
+    function formatPositionText(position) {
+      if (!position) {
+        return 'Position: --';
+      }
+
+      return `Position: ${position.left.toFixed(1)}% L, ${position.top.toFixed(1)}% T`;
+    }
+
+    function applyDesignPosition(position) {
+      if (!position) {
+        return;
+      }
+
+      $designImage.css({
+        left: `${position.left}%`,
+        top: `${position.top}%`,
+        transform: 'translate(-50%, -50%)',
+      });
+    }
+
     function updatePlacementDimensions() {
       if (!$placementDimensions.length || !currentPlacement) {
         return;
@@ -235,6 +277,7 @@
       const locked = isPlacementLocked;
       $placementButtons.prop('disabled', locked);
       $placementSize.prop('disabled', locked);
+      $designImage.toggleClass('is-locked', locked);
 
       if ($placementSave.length) {
         $placementSave.prop('disabled', locked);
@@ -258,7 +301,7 @@
             <li class="mockmaster-designer__upload-item">
               <div>
                 <span class="mockmaster-designer__upload-name">${entry.name}</span>
-                <span class="mockmaster-designer__upload-meta">${entry.placementLabel} · ${entry.dimensions}</span>
+                <span class="mockmaster-designer__upload-meta">${entry.placementLabel} · ${entry.dimensions} · ${formatPositionText(entry.position)}</span>
               </div>
               <button type="button" class="mockmaster-designer__upload-edit" data-design="${entry.name}">Edit</button>
             </li>
@@ -452,6 +495,7 @@
       currentPlacement = null;
       currentPlacementSize = null;
       isPlacementLocked = false;
+      currentDesignPosition = null;
       updatePlacementStatus();
       setPlacementLockState();
       $placementButtons.removeClass('is-active');
@@ -480,13 +524,16 @@
       if (!$designImage.attr('src')) {
         return;
       }
+      if (isPlacementLocked) {
+        return;
+      }
 
       isDragging = true;
       event.preventDefault();
     });
 
     $(document).on(`mousemove${dragNamespace}`, function (event) {
-      if (!isDragging) {
+      if (!isDragging || isPlacementLocked) {
         return;
       }
 
@@ -523,6 +570,7 @@
 
       currentPlacement = placement;
       currentPlacementSize = null;
+      currentDesignPosition = null;
       updatePlacementSlider(placement);
       applyPlacement(placement);
       updatePlacementDimensions();
@@ -548,6 +596,7 @@
         return;
       }
 
+      currentDesignPosition = getDesignPositionPercent();
       const sizeConfig = getPlacementSizeConfig(currentPlacement);
       const size = currentPlacementSize ?? (sizeConfig ? sizeConfig.default : null);
       const placementLabel = placementLabels[currentPlacement] || currentPlacement;
@@ -559,6 +608,7 @@
         placementLabel,
         size,
         dimensions,
+        position: currentDesignPosition,
       };
 
       if (existingIndex >= 0) {
@@ -582,6 +632,7 @@
       currentDesignName = entry.name;
       currentPlacement = entry.placement;
       currentPlacementSize = entry.size;
+      currentDesignPosition = entry.position;
       isPlacementLocked = false;
       updatePlacementStatus();
       setPlacementLockState();
@@ -590,6 +641,7 @@
       $placementButtons.filter(`[data-placement="${entry.placement}"]`).addClass('is-active');
       updatePlacementSlider(entry.placement);
       applyPlacement(entry.placement);
+      applyDesignPosition(entry.position);
       updatePlacementDimensions();
       setViewForPlacement(entry.placement);
 
