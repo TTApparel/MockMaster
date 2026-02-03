@@ -1060,10 +1060,8 @@
     }
 
     function renderQuantizedPreview(workingCanvas, palette, settings) {
-      const canvas = $colorPreview.get(0);
-      if (!canvas) {
-        return null;
-      }
+      const previewCanvasElement = $colorPreview.get(0);
+      const canvas = previewCanvasElement || document.createElement('canvas');
 
       const previewContext = canvas.getContext('2d');
       if (!previewContext) {
