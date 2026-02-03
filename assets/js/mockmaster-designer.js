@@ -76,6 +76,7 @@
     let currentPlacementSize = null;
     let isPlacementLocked = false;
     let currentDesignPosition = null;
+    let currentAltViewOverlay = null;
     const fallbackViewImages = {
       front: '',
       left: sideImage,
@@ -224,6 +225,20 @@
       });
     }
 
+    function getScaledPlacementWidthPercent(placement, sizeOverride) {
+      const placementData = placements[placement];
+      if (!placementData) {
+        return null;
+      }
+
+      const baseWidth = parseFloat(placementData.width);
+      const sizeConfig = getPlacementSizeConfig(placement);
+      const targetSize = sizeOverride ?? currentPlacementSize ?? (sizeConfig ? sizeConfig.default : null);
+      const sizeRatio = sizeConfig && targetSize ? targetSize / sizeConfig.default : 1;
+      const scaledValue = Number.isNaN(baseWidth) ? null : baseWidth * sizeRatio;
+      return scaledValue ? Math.max(0, Math.min(100, scaledValue)) : null;
+    }
+
     function getDesignPositionPercent() {
       const stageWidth = $stage.outerWidth() || 0;
       const stageHeight = $stage.outerHeight() || 0;
@@ -312,16 +327,21 @@
       $uploadList.html(listItems);
     }
 
-    function setViewForPlacement(placement) {
-      let nextView = 'front';
+    function getViewForPlacement(placement) {
       if (placement === 'left-sleeve') {
-        nextView = 'left';
-      } else if (placement === 'right-sleeve') {
-        nextView = 'right';
-      } else if (placement === 'back') {
-        nextView = 'back';
+        return 'left';
       }
+      if (placement === 'right-sleeve') {
+        return 'right';
+      }
+      if (placement === 'back') {
+        return 'back';
+      }
+      return 'front';
+    }
 
+    function setViewForPlacement(placement) {
+      const nextView = getViewForPlacement(placement);
       currentView = nextView;
       $altViewButtons.removeClass('is-active');
       $altViewButtons.filter(`[data-view="${nextView}"]`).addClass('is-active');
@@ -394,6 +414,50 @@
         } else {
           $image.removeClass('is-flipped');
         }
+      });
+
+      updateAltViewOverlay();
+    }
+
+    function updateAltViewOverlay() {
+      $altViewButtons.each(function () {
+        const $button = $(this);
+        const view = $button.data('view');
+        const $image = $button.find('.mockmaster-designer__alt-view-image');
+        let $overlay = $button.find('.mockmaster-designer__alt-view-overlay');
+
+        if (!currentAltViewOverlay || view !== currentAltViewOverlay.view) {
+          if ($overlay.length) {
+            $overlay.remove();
+          }
+          return;
+        }
+
+        if (!$overlay.length) {
+          $overlay = $('<img class="mockmaster-designer__alt-view-overlay" alt="" />');
+          $button.append($overlay);
+        }
+
+        const imageWidth = $image.width() || 0;
+        const imageHeight = $image.height() || 0;
+        const imageOffset = $image.position() || { left: 0, top: 0 };
+
+        if (!imageWidth || !imageHeight) {
+          return;
+        }
+
+        const position = currentAltViewOverlay.position || { left: 50, top: 50 };
+        const widthPercent = currentAltViewOverlay.widthPercent || 0;
+        const leftPx = imageOffset.left + (position.left / 100) * imageWidth;
+        const topPx = imageOffset.top + (position.top / 100) * imageHeight;
+        const widthPx = (widthPercent / 100) * imageWidth;
+
+        $overlay.attr('src', currentAltViewOverlay.src);
+        $overlay.css({
+          left: `${leftPx}px`,
+          top: `${topPx}px`,
+          width: `${widthPx}px`,
+        });
       });
     }
 
@@ -571,6 +635,7 @@
       currentPlacement = placement;
       currentPlacementSize = null;
       currentDesignPosition = null;
+      currentAltViewOverlay = null;
       updatePlacementSlider(placement);
       applyPlacement(placement);
       updatePlacementDimensions();
@@ -601,6 +666,9 @@
       const size = currentPlacementSize ?? (sizeConfig ? sizeConfig.default : null);
       const placementLabel = placementLabels[currentPlacement] || currentPlacement;
       const dimensions = getPlacementDimensionsText(currentPlacement, size);
+      const widthPercent = getScaledPlacementWidthPercent(currentPlacement, size);
+      const designSrc = $designImage.attr('src');
+      const overlayView = getViewForPlacement(currentPlacement);
       const existingIndex = savedDesigns.findIndex((entry) => entry.name === currentDesignName);
       const nextEntry = {
         name: currentDesignName,
@@ -609,6 +677,9 @@
         size,
         dimensions,
         position: currentDesignPosition,
+        widthPercent,
+        view: overlayView,
+        src: designSrc,
       };
 
       if (existingIndex >= 0) {
@@ -620,6 +691,8 @@
       isPlacementLocked = true;
       setPlacementLockState();
       renderSavedDesigns();
+      currentAltViewOverlay = nextEntry;
+      updateAltViewOverlay();
     });
 
     $root.on('click', '.mockmaster-designer__upload-edit', function () {
@@ -633,6 +706,7 @@
       currentPlacement = entry.placement;
       currentPlacementSize = entry.size;
       currentDesignPosition = entry.position;
+      currentAltViewOverlay = entry;
       isPlacementLocked = false;
       updatePlacementStatus();
       setPlacementLockState();
@@ -644,6 +718,7 @@
       applyDesignPosition(entry.position);
       updatePlacementDimensions();
       setViewForPlacement(entry.placement);
+      updateAltViewOverlay();
 
       $categories.removeClass('is-active');
       $categories.filter('[data-category="placement"]').addClass('is-active');

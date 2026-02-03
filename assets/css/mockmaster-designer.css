@@ -132,11 +132,18 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
+  position: relative;
 }
 
 .mockmaster-designer__alt-view-image {
   height: auto;
   display: block;
+}
+
+.mockmaster-designer__alt-view-overlay {
+  position: absolute;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
 }
 
 .mockmaster-designer__alt-view-image.is-flipped {
