@@ -76,9 +76,18 @@ class MockMasterDesigner {
                     <img class="mockmaster-designer__design-image" alt="Design preview" />
                 </div>
                 <div class="mockmaster-designer__alt-views">
-                    <button type="button" class="mockmaster-designer__alt-view" data-view="left">Left</button>
-                    <button type="button" class="mockmaster-designer__alt-view" data-view="back">Back</button>
-                    <button type="button" class="mockmaster-designer__alt-view" data-view="right">Right</button>
+                    <button type="button" class="mockmaster-designer__alt-view" data-view="left">
+                        <img class="mockmaster-designer__alt-view-image" alt="Left view" />
+                        <span>Left</span>
+                    </button>
+                    <button type="button" class="mockmaster-designer__alt-view" data-view="back">
+                        <img class="mockmaster-designer__alt-view-image" alt="Back view" />
+                        <span>Back</span>
+                    </button>
+                    <button type="button" class="mockmaster-designer__alt-view" data-view="right">
+                        <img class="mockmaster-designer__alt-view-image" alt="Right view" />
+                        <span>Right</span>
+                    </button>
                 </div>
                 <button type="button" class="mockmaster-designer__add-to-cart">Add to Cart</button>
             </div>
@@ -276,14 +285,23 @@ class MockMasterDesigner {
                             <div class="mockmaster-designer__placeholder">Add a product image</div>
                         <?php endif; ?>
                         <img class="mockmaster-designer__design-image" alt="Design preview" />
-                    </div>
-                    <div class="mockmaster-designer__alt-views">
-                        <button type="button" class="mockmaster-designer__alt-view" data-view="left">Left</button>
-                        <button type="button" class="mockmaster-designer__alt-view" data-view="back">Back</button>
-                        <button type="button" class="mockmaster-designer__alt-view" data-view="right">Right</button>
-                    </div>
-                    <button type="button" class="mockmaster-designer__add-to-cart">Add to Cart</button>
                 </div>
+                <div class="mockmaster-designer__alt-views">
+                    <button type="button" class="mockmaster-designer__alt-view" data-view="left">
+                        <img class="mockmaster-designer__alt-view-image" alt="Left view" />
+                        <span>Left</span>
+                    </button>
+                    <button type="button" class="mockmaster-designer__alt-view" data-view="back">
+                        <img class="mockmaster-designer__alt-view-image" alt="Back view" />
+                        <span>Back</span>
+                    </button>
+                    <button type="button" class="mockmaster-designer__alt-view" data-view="right">
+                        <img class="mockmaster-designer__alt-view-image" alt="Right view" />
+                        <span>Right</span>
+                    </button>
+                </div>
+                <button type="button" class="mockmaster-designer__add-to-cart">Add to Cart</button>
+            </div>
                 <div class="mockmaster-designer__right">
                     <div class="mockmaster-designer__arc mockmaster-designer__arc--right">
                         <div class="mockmaster-designer__panel is-active" data-panel="color">

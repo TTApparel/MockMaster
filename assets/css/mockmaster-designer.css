@@ -124,6 +124,19 @@
   font-size: 12px;
   text-transform: uppercase;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.mockmaster-designer__alt-view-image {
+  height: auto;
+  display: block;
+}
+
+.mockmaster-designer__alt-view-image.is-flipped {
+  transform: scaleX(-1);
 }
 
 .mockmaster-designer__add-to-cart {

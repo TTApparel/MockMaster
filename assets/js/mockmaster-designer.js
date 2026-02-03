@@ -50,6 +50,33 @@
       }
     }
 
+    function setAltViewButtonImages() {
+      const stageWidth = $stage.outerWidth() || 0;
+      const thumbnailWidth = stageWidth ? stageWidth / 4 : 0;
+      const fallbackImage = currentColorImage || data.defaultImage || '';
+
+      $altViewButtons.each(function () {
+        const $button = $(this);
+        const view = $button.data('view');
+        const $image = $button.find('.mockmaster-designer__alt-view-image');
+        const viewImage = altViewImages[view] || fallbackImage;
+
+        if (viewImage) {
+          $image.attr('src', viewImage);
+        }
+
+        if (thumbnailWidth) {
+          $image.css('width', `${thumbnailWidth}px`);
+        }
+
+        if (view === 'right' && altViewImages[view]) {
+          $image.addClass('is-flipped');
+        } else {
+          $image.removeClass('is-flipped');
+        }
+      });
+    }
+
     function renderColors() {
       const colors = data.colors || {};
       const entries = Object.keys(colors);
@@ -81,6 +108,7 @@
         setBaseImageForView(currentView);
       }
 
+      setAltViewButtonImages();
       renderQuantities(firstKey);
     }
 
@@ -132,6 +160,7 @@
       $baseImage.removeClass('is-flipped');
       $altViewButtons.removeClass('is-active');
 
+      setAltViewButtonImages();
       renderQuantities(colorKey);
     });
 
@@ -220,14 +249,32 @@
       currentView = view;
 
       setBaseImageForView(view);
+      setAltViewButtonImages();
     });
 
     renderColors();
+    setAltViewButtonImages();
   }
 
   $(document).ready(function () {
     $('.mockmaster-designer').each(function () {
       initDesigner($(this));
+    });
+  });
+
+  $(window).on('resize', function () {
+    $('.mockmaster-designer').each(function () {
+      const $root = $(this);
+      const $stage = $root.find('.mockmaster-designer__image-stage');
+      const stageWidth = $stage.outerWidth() || 0;
+      const thumbnailWidth = stageWidth ? stageWidth / 4 : 0;
+
+      $root.find('.mockmaster-designer__alt-view-image').each(function () {
+        const $image = $(this);
+        if (thumbnailWidth) {
+          $image.css('width', `${thumbnailWidth}px`);
+        }
+      });
     });
   });
 })(jQuery);
