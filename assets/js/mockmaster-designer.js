@@ -797,6 +797,10 @@
       }
     }
 
+    function isPlacementPanelActive() {
+      return $panels.filter('[data-panel="placement"]').hasClass('is-active');
+    }
+
     function getViewForPlacement(placement) {
       if (placement === 'left-sleeve') {
         return 'left';
@@ -1349,6 +1353,9 @@
       if (!$designImage.attr('src')) {
         return;
       }
+      if (!isPlacementPanelActive()) {
+        return;
+      }
       if (isPlacementLocked) {
         return;
       }
@@ -1359,6 +1366,9 @@
 
     $(document).on(`mousemove${dragNamespace}`, function (event) {
       if (!isDragging || isPlacementLocked) {
+        return;
+      }
+      if (!isPlacementPanelActive()) {
         return;
       }
 
