@@ -170,15 +170,11 @@ class MockMasterDesigner {
         $style_attr = $this->get_css_variables_inline();
         $product = $this->get_preview_product();
         $image_url = $product ? wp_get_attachment_image_url($product->get_image_id(), 'large') : '';
-        $preview_data = $this->build_product_data($product);
         $updated = isset($_GET['settings-updated']) && $_GET['settings-updated'] === 'true';
 
         ?>
         <div class="wrap">
             <h1>MockMaster Designer</h1>
-            <div class="notice notice-info">
-                <p><strong>How to add this to product pages:</strong> Add the <code>[mockmaster_designer]</code> shortcode to your product description or any custom product tab that supports shortcodes. Developers can also place it in templates via <code>echo do_shortcode('[mockmaster_designer]');</code>.</p>
-            </div>
             <?php if ($updated) : ?>
                 <div class="notice notice-success is-dismissible">
                     <p>Settings updated.</p>
@@ -263,19 +259,6 @@ class MockMasterDesigner {
             </form>
 
             <h2>Preview</h2>
-            <?php if ($selected_product_id && !empty($preview_data['colors'])) : ?>
-                <div class="notice notice-info">
-                    <p><strong>Swatch debug:</strong></p>
-                    <ul>
-                        <?php foreach ($preview_data['colors'] as $color_key => $color_data) : ?>
-                            <li>
-                                <?php echo esc_html($color_data['label'] ?? $color_key); ?> —
-                                <?php echo esc_url($color_data['swatch'] ?? ''); ?>
-                            </li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
-            <?php endif; ?>
             <section class="mockmaster-designer" data-product-id="<?php echo esc_attr($selected_product_id); ?>" style="<?php echo esc_attr($style_attr); ?>">
                 <div class="mockmaster-designer__left">
                     <div class="mockmaster-designer__arc mockmaster-designer__arc--left">
@@ -313,7 +296,6 @@ class MockMasterDesigner {
                                 <input type="file" accept="image/*" class="mockmaster-designer__upload-input" />
                                 <span>Choose image</span>
                             </label>
-                            <ul class="mockmaster-designer__upload-list" data-role="design-uploads"></ul>
                         </div>
                         <div class="mockmaster-designer__panel" data-panel="placement">
                             <p class="mockmaster-designer__panel-title">Choose placement</p>
@@ -523,18 +505,9 @@ class MockMasterDesigner {
             return '';
         }
 
-        $ssp_image = $this->resolve_ssp_image_url($term->term_id);
-        if ($ssp_image) {
-            return $ssp_image;
-        }
-
         $meta_keys = array(
             'swatch_image',
             'swatch_image_id',
-            'swatch_image_url',
-            'swatch_image_src',
-            'swatch_id',
-            'swatch',
             'product_attribute_swatch',
             'product_attribute_image',
             'attribute_image',
@@ -547,112 +520,16 @@ class MockMasterDesigner {
                 continue;
             }
 
-            if (is_array($value) || is_object($value)) {
-                $value = $this->resolve_swatch_meta_array((array) $value);
-                if (!$value) {
-                    continue;
-                }
-            }
-
             if (is_numeric($value)) {
-                $image_url = wp_get_attachment_url((int) $value);
+                $image_url = wp_get_attachment_image_url((int) $value, 'thumbnail');
                 if ($image_url) {
                     return $image_url;
                 }
             }
 
-            if (is_string($value)) {
-                $url = $this->extract_image_url_from_string($value);
-                if ($url) {
-                    return $url;
-                }
+            if (is_string($value) && filter_var($value, FILTER_VALIDATE_URL)) {
+                return $value;
             }
-        }
-
-        return '';
-    }
-
-    private function resolve_swatch_meta_array($value) {
-        $keys = array('image_id', 'id', 'attachment_id', 'image', 'image_url', 'img', 'url', 'src', 'swatch', 'swatch_image');
-        foreach ($keys as $key) {
-            if (!empty($value[$key])) {
-                return $value[$key];
-            }
-        }
-
-        foreach ($value as $entry) {
-            if (is_array($entry) || is_object($entry)) {
-                $resolved = $this->resolve_swatch_meta_array((array) $entry);
-                if ($resolved) {
-                    return $resolved;
-                }
-            }
-        }
-
-        return '';
-    }
-
-    private function resolve_ssp_image_url($term_id) {
-        $raw = get_term_meta($term_id, 'ssp_attribute_options_pa_color', true);
-        if (!$raw) {
-            return '';
-        }
-
-        $data = $raw;
-        if (is_string($raw)) {
-            $maybe = maybe_unserialize($raw);
-            if ($maybe !== $raw) {
-                $data = $maybe;
-            }
-        }
-
-        return $this->find_image_in_meta($data);
-    }
-
-    private function find_image_in_meta($data) {
-        if (is_numeric($data)) {
-            $url = wp_get_attachment_url((int) $data);
-            return $url ?: '';
-        }
-
-        if (is_string($data)) {
-            return $this->extract_image_url_from_string($data);
-        }
-
-        if (is_array($data)) {
-            $preferred_keys = array('image', 'image_url', 'img', 'url', 'src', 'swatch', 'swatch_image', 'attachment_id', 'id');
-            foreach ($preferred_keys as $key) {
-                if (isset($data[$key])) {
-                    $found = $this->find_image_in_meta($data[$key]);
-                    if ($found) {
-                        return $found;
-                    }
-                }
-            }
-
-            foreach ($data as $value) {
-                $found = $this->find_image_in_meta($value);
-                if ($found) {
-                    return $found;
-                }
-            }
-        }
-
-        if (is_object($data)) {
-            return $this->find_image_in_meta((array) $data);
-        }
-
-        return '';
-    }
-
-    private function extract_image_url_from_string($value) {
-        $value = trim($value);
-        if (preg_match('#^https?://#i', $value)) {
-            return $value;
-        }
-
-        if (preg_match('#https?://[^)\'"\\s]+#i', $value, $matches)) {
-            return $matches[0];
         }
 
         return '';
