@@ -347,6 +347,10 @@
 
       $panels.removeClass('is-active');
       $panels.filter(`[data-panel="${category}"]`).addClass('is-active');
+
+      if (category === 'design') {
+        updateSelectQuantitiesButton();
+      }
     }
 
     function getViewForPlacement(placement) {
@@ -712,6 +716,7 @@
       renderSavedDesigns();
       renderAltViewOverlays();
       switchPanel('design');
+      updateSelectQuantitiesButton();
     });
 
     $selectQuantities.on('click', function () {
