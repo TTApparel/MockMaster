@@ -6,13 +6,13 @@
       top: '32%',
       left: '56%',
       width: '18%',
-      size: { min: 2, max: 7, default: 4.5 },
+      size: { min: 2, max: 6, default: 4.5 },
     },
     'right-chest': {
       top: '32%',
       left: '38%',
       width: '18%',
-      size: { min: 2, max: 7, default: 4.5 },
+      size: { min: 2, max: 6, default: 4.5 },
     },
     'full-chest': {
       top: '34%',
