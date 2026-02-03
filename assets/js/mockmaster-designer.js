@@ -91,6 +91,14 @@
     );
   }
 
+  function normalizeHexColor(hex) {
+    const cleaned = String(hex || '').replace('#', '');
+    if (cleaned.length !== 6) {
+      return '#FFFFFF';
+    }
+    return `#${cleaned.toUpperCase()}`;
+  }
+
   function createCanvasFromImage(image, maxDimension, allowUpscale) {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
@@ -1045,14 +1053,15 @@
       const items = palette
         .map((entry, index) => {
           const percent = entry.percent.toFixed(2);
+          const hexValue = normalizeHexColor(entry.hex);
           return `
-            <div class="mockmaster-designer__color-counter-swatch">
+            <div class="mockmaster-designer__color-counter-swatch" data-index="${index}">
               <label class="mockmaster-designer__color-counter-color-picker">
-                <span class="mockmaster-designer__color-counter-color" style="background:${entry.hex}"></span>
-                <input type="color" value="${entry.hex}" data-role="color-swatch-input" data-index="${index}" />
+                <span class="mockmaster-designer__color-counter-color" style="background:${hexValue}"></span>
+                <input type="color" value="${hexValue.toLowerCase()}" data-role="color-swatch-input" data-index="${index}" />
               </label>
               <div class="mockmaster-designer__color-counter-meta">
-                <span>${entry.hex}</span>
+                <span>${hexValue}</span>
                 <span>${percent}%</span>
               </div>
             </div>
@@ -1214,14 +1223,16 @@
       if (Number.isNaN(index) || !currentColorPalette[index]) {
         return;
       }
-      const nextHex = $(this).val();
+      const nextHex = normalizeHexColor($(this).val());
       const nextRgb = parseHexColor(nextHex);
       currentColorPalette[index] = {
         ...currentColorPalette[index],
-        hex: nextHex.toUpperCase(),
+        hex: nextHex,
         rgb: nextRgb,
       };
-      renderPalette(currentColorPalette);
+      const $swatch = $colorPalette.find(`.mockmaster-designer__color-counter-swatch[data-index="${index}"]`);
+      $swatch.find('.mockmaster-designer__color-counter-color').css('background', nextHex);
+      $swatch.find('.mockmaster-designer__color-counter-meta span').first().text(nextHex);
       $colorPaletteInput.val(JSON.stringify(currentColorPalette));
       if (data.ajaxUrl && data.colorCounterNonce) {
         $.post(data.ajaxUrl, {
