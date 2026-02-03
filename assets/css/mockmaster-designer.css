@@ -103,6 +103,10 @@
   cursor: move;
 }
 
+.mockmaster-designer__design-image.is-locked {
+  cursor: default;
+}
+
 .mockmaster-designer__design-image.is-visible {
   opacity: 1;
 }
@@ -128,11 +132,18 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
+  position: relative;
 }
 
 .mockmaster-designer__alt-view-image {
   height: auto;
   display: block;
+}
+
+.mockmaster-designer__alt-view-overlay {
+  position: absolute;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
 }
 
 .mockmaster-designer__alt-view-image.is-flipped {
@@ -258,9 +269,44 @@
 
 .mockmaster-designer__upload-list {
   margin: 12px 0 0;
-  padding-left: 18px;
+  padding-left: 0;
   font-size: 12px;
   color: #555;
+}
+
+.mockmaster-designer__upload-item {
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.mockmaster-designer__upload-name {
+  font-weight: 600;
+  display: block;
+  color: #222;
+}
+
+.mockmaster-designer__upload-meta {
+  display: block;
+  font-size: 11px;
+  color: #666;
+  margin-top: 2px;
+}
+
+.mockmaster-designer__upload-edit {
+  border: 1px solid var(--mm-arc-color, #1a1a1a);
+  background: #fff;
+  color: #1a1a1a;
+  font-size: 11px;
+  padding: 6px 10px;
+  text-transform: uppercase;
+  cursor: pointer;
 }
 
 .mockmaster-designer__upload-list li {
@@ -314,6 +360,23 @@
   margin: 6px 0 0;
   font-size: 12px;
   color: #666;
+}
+
+.mockmaster-designer__placement-save {
+  margin-top: 12px;
+  width: 100%;
+  border: 1px solid var(--mm-arc-color, #1a1a1a);
+  background: var(--mm-category-active-bg, #1a1a1a);
+  color: var(--mm-category-active-text, #fff);
+  padding: 8px 12px;
+  text-transform: uppercase;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.mockmaster-designer__placement-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .mockmaster-designer__quantities {
