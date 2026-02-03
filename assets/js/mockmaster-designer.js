@@ -29,6 +29,7 @@
     let currentView = 'front';
     let currentColorImage = '';
     const fallbackViewImages = {
+      front: '',
       left: sideImage,
       back: data.colorBackImage || '',
       right: sideImage,
@@ -111,6 +112,8 @@
           } else if (view === 'left' || view === 'right') {
             viewImage = viewUrls.leftPrimary;
             fallbackForView = viewUrls.leftFallback || fallbackImage;
+          } else if (view === 'front') {
+            viewImage = viewUrls.front;
           } else {
             viewImage = viewUrls.front;
           }

@@ -76,6 +76,10 @@ class MockMasterDesigner {
                     <img class="mockmaster-designer__design-image" alt="Design preview" />
                 </div>
                 <div class="mockmaster-designer__alt-views">
+                    <button type="button" class="mockmaster-designer__alt-view" data-view="front">
+                        <img class="mockmaster-designer__alt-view-image" alt="Front view" />
+                        <span>Front</span>
+                    </button>
                     <button type="button" class="mockmaster-designer__alt-view" data-view="left">
                         <img class="mockmaster-designer__alt-view-image" alt="Left view" />
                         <span>Left</span>
@@ -287,6 +291,10 @@ class MockMasterDesigner {
                         <img class="mockmaster-designer__design-image" alt="Design preview" />
                 </div>
                 <div class="mockmaster-designer__alt-views">
+                    <button type="button" class="mockmaster-designer__alt-view" data-view="front">
+                        <img class="mockmaster-designer__alt-view-image" alt="Front view" />
+                        <span>Front</span>
+                    </button>
                     <button type="button" class="mockmaster-designer__alt-view" data-view="left">
                         <img class="mockmaster-designer__alt-view-image" alt="Left view" />
                         <span>Left</span>
