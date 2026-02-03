@@ -2,12 +2,42 @@
   const data = window.MockMasterDesignerData || {};
 
   const placements = {
-    'left-chest': { top: '32%', left: '56%', width: '22%' },
-    'right-chest': { top: '32%', left: '38%', width: '22%' },
-    'full-chest': { top: '34%', left: '50%', width: '42%' },
-    'left-sleeve': { top: '28%', left: '49%', width: '18%' },
-    'right-sleeve': { top: '28%', left: '51%', width: '18%' },
-    back: { top: '38%', left: '50%', width: '40%' },
+    'left-chest': {
+      top: '32%',
+      left: '56%',
+      width: '22%',
+      size: { min: 2, max: 7, default: 4.5 },
+    },
+    'right-chest': {
+      top: '32%',
+      left: '38%',
+      width: '22%',
+      size: { min: 2, max: 7, default: 4.5 },
+    },
+    'full-chest': {
+      top: '34%',
+      left: '50%',
+      width: '42%',
+      size: { min: 6, max: 12, default: 10 },
+    },
+    'left-sleeve': {
+      top: '28%',
+      left: '49%',
+      width: '18%',
+      size: { min: 1, max: 5, default: 3 },
+    },
+    'right-sleeve': {
+      top: '28%',
+      left: '51%',
+      width: '18%',
+      size: { min: 1, max: 5, default: 3 },
+    },
+    back: {
+      top: '38%',
+      left: '50%',
+      width: '40%',
+      size: { min: 8, max: 8, default: 8 },
+    },
   };
 
   function initDesigner($root) {
