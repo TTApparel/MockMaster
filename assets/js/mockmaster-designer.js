@@ -76,7 +76,6 @@
     let currentPlacementSize = null;
     let isPlacementLocked = false;
     let currentDesignPosition = null;
-    let currentAltViewOverlay = null;
     const fallbackViewImages = {
       front: '',
       left: sideImage,
@@ -416,27 +415,16 @@
         }
       });
 
-      updateAltViewOverlay();
+      renderAltViewOverlays();
     }
 
-    function updateAltViewOverlay() {
+    function renderAltViewOverlays() {
       $altViewButtons.each(function () {
         const $button = $(this);
         const view = $button.data('view');
         const $image = $button.find('.mockmaster-designer__alt-view-image');
-        let $overlay = $button.find('.mockmaster-designer__alt-view-overlay');
-
-        if (!currentAltViewOverlay || view !== currentAltViewOverlay.view) {
-          if ($overlay.length) {
-            $overlay.remove();
-          }
-          return;
-        }
-
-        if (!$overlay.length) {
-          $overlay = $('<img class="mockmaster-designer__alt-view-overlay" alt="" />');
-          $button.append($overlay);
-        }
+        const $existingOverlays = $button.find('.mockmaster-designer__alt-view-overlay');
+        $existingOverlays.remove();
 
         const imageWidth = $image.width() || 0;
         const imageHeight = $image.height() || 0;
@@ -446,17 +434,25 @@
           return;
         }
 
-        const position = currentAltViewOverlay.position || { left: 50, top: 50 };
-        const widthPercent = currentAltViewOverlay.widthPercent || 0;
-        const leftPx = imageOffset.left + (position.left / 100) * imageWidth;
-        const topPx = imageOffset.top + (position.top / 100) * imageHeight;
-        const widthPx = (widthPercent / 100) * imageWidth;
+        savedDesigns.forEach((entry) => {
+          if (entry.view !== view || !entry.src) {
+            return;
+          }
 
-        $overlay.attr('src', currentAltViewOverlay.src);
-        $overlay.css({
-          left: `${leftPx}px`,
-          top: `${topPx}px`,
-          width: `${widthPx}px`,
+          const position = entry.position || { left: 50, top: 50 };
+          const widthPercent = entry.widthPercent || 0;
+          const leftPx = imageOffset.left + (position.left / 100) * imageWidth;
+          const topPx = imageOffset.top + (position.top / 100) * imageHeight;
+          const widthPx = (widthPercent / 100) * imageWidth;
+          const $overlay = $('<img class="mockmaster-designer__alt-view-overlay" alt="" />');
+
+          $overlay.attr('src', entry.src);
+          $overlay.css({
+            left: `${leftPx}px`,
+            top: `${topPx}px`,
+            width: `${widthPx}px`,
+          });
+          $button.append($overlay);
         });
       });
     }
@@ -635,7 +631,6 @@
       currentPlacement = placement;
       currentPlacementSize = null;
       currentDesignPosition = null;
-      currentAltViewOverlay = null;
       updatePlacementSlider(placement);
       applyPlacement(placement);
       updatePlacementDimensions();
@@ -691,8 +686,7 @@
       isPlacementLocked = true;
       setPlacementLockState();
       renderSavedDesigns();
-      currentAltViewOverlay = nextEntry;
-      updateAltViewOverlay();
+      renderAltViewOverlays();
     });
 
     $root.on('click', '.mockmaster-designer__upload-edit', function () {
@@ -706,8 +700,11 @@
       currentPlacement = entry.placement;
       currentPlacementSize = entry.size;
       currentDesignPosition = entry.position;
-      currentAltViewOverlay = entry;
       isPlacementLocked = false;
+      if (entry.src) {
+        $designImage.attr('src', entry.src);
+        $designImage.addClass('is-visible');
+      }
       updatePlacementStatus();
       setPlacementLockState();
 
@@ -718,7 +715,7 @@
       applyDesignPosition(entry.position);
       updatePlacementDimensions();
       setViewForPlacement(entry.placement);
-      updateAltViewOverlay();
+      renderAltViewOverlays();
 
       $categories.removeClass('is-active');
       $categories.filter('[data-category="placement"]').addClass('is-active');
