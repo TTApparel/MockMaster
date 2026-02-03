@@ -1059,7 +1059,7 @@
       $colorPalette.html(items);
     }
 
-    function renderQuantizedPreview(workingCanvas, palette, maxPreviewDim) {
+    function renderQuantizedPreview(workingCanvas, palette, settings) {
       if (!$colorPreview.length) {
         return;
       }
@@ -1079,13 +1079,14 @@
         return;
       }
 
-      const previewCanvas = createPreviewCanvasFromWorkingCanvas(workingCanvas, maxPreviewDim);
+      const previewCanvas = createPreviewCanvasFromWorkingCanvas(workingCanvas, settings.max_preview_dim);
       if (!previewCanvas) {
         return;
       }
 
       canvas.width = previewCanvas.width;
       canvas.height = previewCanvas.height;
+      previewContext.clearRect(0, 0, canvas.width, canvas.height);
       const previewData = previewCanvas.getContext('2d').getImageData(0, 0, previewCanvas.width, previewCanvas.height);
       const data = previewData.data;
       const centroids = palette.map((entry) => entry.rgb);
@@ -1094,6 +1095,11 @@
         const r = data[i];
         const g = data[i + 1];
         const b = data[i + 2];
+        const alpha = data[i + 3];
+        if (alpha === 0 || alpha < settings.alpha_threshold) {
+          data[i + 3] = 0;
+          continue;
+        }
         let nearest = 0;
         let nearestDistance = Number.POSITIVE_INFINITY;
 
@@ -1112,7 +1118,7 @@
         data[i] = centroids[nearest][0];
         data[i + 1] = centroids[nearest][1];
         data[i + 2] = centroids[nearest][2];
-        data[i + 3] = 255;
+        data[i + 3] = alpha;
       }
 
       previewContext.putImageData(previewData, 0, 0);
@@ -1195,7 +1201,7 @@
       };
 
       updateColorCounterOutputs(result, settings);
-      renderQuantizedPreview(workingCanvas, palette, settings.max_preview_dim);
+      renderQuantizedPreview(workingCanvas, palette, settings);
     }
 
     $root.on('click', '.mockmaster-designer__category', function () {
