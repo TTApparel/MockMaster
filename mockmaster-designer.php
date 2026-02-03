@@ -532,7 +532,77 @@ class MockMasterDesigner {
             }
         }
 
+        return $this->resolve_ssp_image_url($term->term_id);
+    }
+
+    private function find_ssp_image($data) {
+        if (is_numeric($data)) {
+            $url = wp_get_attachment_url((int) $data);
+            if ($url) {
+                return $url;
+            }
+        }
+
+        if (is_string($data)) {
+            $string = trim($data);
+            if (preg_match('#^https?://#i', $string)) {
+                return $string;
+            }
+            if (preg_match('#https?://[^)\'"\\s]+#i', $string, $matches)) {
+                return $matches[0];
+            }
+        }
+
+        if (is_array($data)) {
+            $preferred_keys = array(
+                'image',
+                'image_url',
+                'img',
+                'url',
+                'src',
+                'swatch',
+                'swatch_image',
+                'attachment_id',
+                'id',
+            );
+            foreach ($preferred_keys as $key) {
+                if (array_key_exists($key, $data)) {
+                    $found = $this->find_ssp_image($data[$key]);
+                    if ($found) {
+                        return $found;
+                    }
+                }
+            }
+            foreach ($data as $value) {
+                $found = $this->find_ssp_image($value);
+                if ($found) {
+                    return $found;
+                }
+            }
+        }
+
+        if (is_object($data)) {
+            return $this->find_ssp_image((array) $data);
+        }
+
         return '';
+    }
+
+    private function resolve_ssp_image_url($term_id) {
+        $raw = get_term_meta($term_id, 'ssp_attribute_options_pa_color', true);
+        if (!$raw) {
+            return '';
+        }
+
+        $data = $raw;
+        if (is_string($raw)) {
+            $maybe = maybe_unserialize($raw);
+            if ($maybe !== $raw) {
+                $data = $maybe;
+            }
+        }
+
+        return $this->find_ssp_image($data);
     }
 }
 
