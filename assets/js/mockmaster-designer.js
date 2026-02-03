@@ -58,6 +58,7 @@
     const $designImage = $root.find('.mockmaster-designer__design-image');
     const $uploadInput = $root.find('.mockmaster-designer__upload-input');
     const $uploadList = $root.find('[data-role="design-uploads"]');
+    const $selectQuantities = $root.find('[data-role="select-quantities"]');
     const $altViewButtons = $root.find('.mockmaster-designer__alt-view');
     const $placementButtons = $root.find('.mockmaster-designer__placement-options button');
     const $placementStatus = $root.find('[data-role="placement-status"]');
@@ -306,6 +307,7 @@
 
       if (!savedDesigns.length) {
         $uploadList.html('<li>No saved placements yet.</li>');
+        updateSelectQuantitiesButton();
         return;
       }
 
@@ -327,6 +329,28 @@
         .join('');
 
       $uploadList.html(listItems);
+      updateSelectQuantitiesButton();
+    }
+
+    function updateSelectQuantitiesButton() {
+      if (!$selectQuantities.length) {
+        return;
+      }
+
+      const hasUploads = $uploadList.find('.mockmaster-designer__upload-item').length > 0;
+      $selectQuantities.toggleClass('is-hidden', !hasUploads);
+    }
+
+    function switchPanel(category) {
+      $categories.removeClass('is-active');
+      $categories.filter(`[data-category="${category}"]`).addClass('is-active');
+
+      $panels.removeClass('is-active');
+      $panels.filter(`[data-panel="${category}"]`).addClass('is-active');
+
+      if (category === 'design') {
+        updateSelectQuantitiesButton();
+      }
     }
 
     function getViewForPlacement(placement) {
@@ -571,6 +595,7 @@
       reader.onload = function (loadEvent) {
         $designImage.attr('src', loadEvent.target.result);
         $designImage.addClass('is-visible');
+        switchPanel('placement');
       };
       reader.readAsDataURL(file);
     });
@@ -690,6 +715,12 @@
       setPlacementLockState();
       renderSavedDesigns();
       renderAltViewOverlays();
+      switchPanel('design');
+      updateSelectQuantitiesButton();
+    });
+
+    $selectQuantities.on('click', function () {
+      switchPanel('quantities');
     });
 
     $root.on('click', '.mockmaster-designer__upload-edit', function () {

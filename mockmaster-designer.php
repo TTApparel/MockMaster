@@ -108,6 +108,7 @@ class MockMasterDesigner {
                             <span>Choose image</span>
                         </label>
                         <ul class="mockmaster-designer__upload-list" data-role="design-uploads"></ul>
+                        <button type="button" class="mockmaster-designer__select-quantities is-hidden" data-role="select-quantities">Select Quantities</button>
                     </div>
                     <div class="mockmaster-designer__panel" data-panel="placement">
                         <p class="mockmaster-designer__panel-title">Choose placement</p>
