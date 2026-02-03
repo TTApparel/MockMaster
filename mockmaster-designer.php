@@ -125,6 +125,7 @@ class MockMasterDesigner {
                             <input type="range" min="1" max="15" value="3.5" step="0.1" data-role="placement-size" />
                         </label>
                         <p class="mockmaster-designer__placement-dimensions" data-role="placement-dimensions">--</p>
+                        <button type="button" class="mockmaster-designer__placement-save" data-role="placement-save">Save placement</button>
                     </div>
                     <div class="mockmaster-designer__panel" data-panel="quantities">
                         <p class="mockmaster-designer__panel-title">Sizes & quantities</p>
