@@ -28,22 +28,63 @@
     const sideImage = data.ColorDirectSideImage || data.colorSideImage || '';
     let currentView = 'front';
     let currentColorImage = '';
-    const altViewImages = {
+    const fallbackViewImages = {
       left: sideImage,
       back: data.colorBackImage || '',
       right: sideImage,
     };
 
-    function setBaseImageForView(view) {
-      const viewImage = altViewImages[view];
-      const fallbackImage = currentColorImage || data.defaultImage || '';
-      const imageToUse = viewImage || fallbackImage;
+    function deriveViewUrls(frontUrl) {
+      if (!frontUrl) {
+        return null;
+      }
+      const match = frontUrl.match(/_f_fm\.(jpg|jpeg|png)$/i);
+      if (!match) {
+        return null;
+      }
+      const extension = match[1];
+      const base = frontUrl.replace(/_f_fm\.(jpg|jpeg|png)$/i, '');
+      return {
+        front: frontUrl,
+        back: `${base}_b_fm.${extension}`,
+        leftPrimary: `${base}_d_fm.${extension}`,
+        leftFallback: `${base}_fm.${extension}`,
+      };
+    }
 
-      if (imageToUse) {
-        $baseImage.attr('src', imageToUse);
+    function applyImageWithFallback($image, primary, fallback) {
+      if (!primary) {
+        return;
       }
 
-      if (view === 'right' && viewImage) {
+      $image.off('error.mockmaster').on('error.mockmaster', function () {
+        if (fallback && $image.attr('src') !== fallback) {
+          $image.attr('src', fallback);
+        }
+      });
+
+      $image.attr('src', primary);
+    }
+
+    function setBaseImageForView(view) {
+      const frontUrl = currentColorImage || data.defaultImage || '';
+      const viewUrls = deriveViewUrls(frontUrl);
+      const fallbackImage = frontUrl || '';
+
+      if (viewUrls) {
+        if (view === 'back') {
+          applyImageWithFallback($baseImage, viewUrls.back, fallbackImage);
+        } else if (view === 'left' || view === 'right') {
+          applyImageWithFallback($baseImage, viewUrls.leftPrimary, viewUrls.leftFallback || fallbackImage);
+        } else {
+          applyImageWithFallback($baseImage, viewUrls.front, fallbackImage);
+        }
+      } else {
+        const fallbackViewImage = fallbackViewImages[view] || fallbackImage;
+        applyImageWithFallback($baseImage, fallbackViewImage, fallbackImage);
+      }
+
+      if (view === 'right') {
         $baseImage.addClass('is-flipped');
       } else {
         $baseImage.removeClass('is-flipped');
@@ -53,23 +94,37 @@
     function setAltViewButtonImages() {
       const stageWidth = $stage.outerWidth() || 0;
       const thumbnailWidth = stageWidth ? stageWidth / 4 : 0;
-      const fallbackImage = currentColorImage || data.defaultImage || '';
+      const frontUrl = currentColorImage || data.defaultImage || '';
+      const viewUrls = deriveViewUrls(frontUrl);
+      const fallbackImage = frontUrl || '';
 
       $altViewButtons.each(function () {
         const $button = $(this);
         const view = $button.data('view');
         const $image = $button.find('.mockmaster-designer__alt-view-image');
-        const viewImage = altViewImages[view] || fallbackImage;
+        let viewImage = fallbackViewImages[view] || fallbackImage;
+        let fallbackForView = fallbackImage;
+
+        if (viewUrls) {
+          if (view === 'back') {
+            viewImage = viewUrls.back;
+          } else if (view === 'left' || view === 'right') {
+            viewImage = viewUrls.leftPrimary;
+            fallbackForView = viewUrls.leftFallback || fallbackImage;
+          } else {
+            viewImage = viewUrls.front;
+          }
+        }
 
         if (viewImage) {
-          $image.attr('src', viewImage);
+          applyImageWithFallback($image, viewImage, fallbackForView);
         }
 
         if (thumbnailWidth) {
           $image.css('width', `${thumbnailWidth}px`);
         }
 
-        if (view === 'right' && altViewImages[view]) {
+        if (view === 'right' && viewImage) {
           $image.addClass('is-flipped');
         } else {
           $image.removeClass('is-flipped');
