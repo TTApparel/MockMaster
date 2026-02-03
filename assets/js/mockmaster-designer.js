@@ -299,6 +299,31 @@
         width: placementData.width,
         transform: 'translate(-50%, -50%)',
       });
+
+      let nextView = 'front';
+      if (placement === 'left-sleeve') {
+        nextView = 'left';
+      } else if (placement === 'right-sleeve') {
+        nextView = 'right';
+      } else if (placement === 'back') {
+        nextView = 'back';
+      }
+
+      currentView = nextView;
+      $altViewButtons.removeClass('is-active');
+      $altViewButtons.filter(`[data-view="${nextView}"]`).addClass('is-active');
+      setBaseImageForView(nextView);
+      setAltViewButtonImages();
+    });
+
+    $root.on('click', '.mockmaster-designer__alt-view', function () {
+      const view = $(this).data('view');
+      $altViewButtons.removeClass('is-active');
+      $(this).addClass('is-active');
+      currentView = view;
+
+      setBaseImageForView(view);
+      setAltViewButtonImages();
     });
 
     $root.on('click', '.mockmaster-designer__alt-view', function () {
