@@ -39,11 +39,12 @@
           const color = colors[key];
           const activeClass = index === 0 ? 'is-active' : '';
           const label = color.label || key;
+          const labelText = String(label).toUpperCase();
           const swatchImage = color.swatch;
           const styleAttr = swatchImage ? `style="background-image: url('${swatchImage}');"` : '';
           const imageClass = swatchImage ? 'has-image' : '';
           return `
-            <button type="button" class="mockmaster-designer__swatch ${activeClass} ${imageClass}" data-color="${key}" data-label="${label}" ${styleAttr} aria-label="${label}"></button>
+            <button type="button" class="mockmaster-designer__swatch ${activeClass} ${imageClass}" data-color="${key}" data-label="${labelText}" ${styleAttr} aria-label="${label}"></button>
           `;
         })
         .join('');
