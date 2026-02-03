@@ -268,8 +268,8 @@
 }
 
 .mockmaster-designer__upload {
-  display: inline-flex;
-  align-items: center;
+  display: flex;
+  align-items: flex-end;
   gap: 8px;
   border: 1px dashed var(--mm-arc-color, #1a1a1a);
   padding: 12px;
