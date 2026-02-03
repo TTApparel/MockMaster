@@ -156,16 +156,14 @@
 
 .mockmaster-designer__swatches {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+  grid-template-columns: repeat(auto-fit, 53px);
+  grid-auto-rows: 39px;
   gap: 8px;
 }
 
 .mockmaster-designer__swatch {
   border: 1px solid var(--mm-arc-color, #1a1a1a);
-  padding: 8px;
-  text-align: center;
-  font-size: 12px;
-  text-transform: uppercase;
+  padding: 0;
   cursor: pointer;
   position: relative;
   background: #fff;
@@ -173,6 +171,10 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
+  width: 53px;
+  height: 39px;
+  background-size: cover;
+  background-position: center;
 }
 
 .mockmaster-designer__swatch.is-active {
