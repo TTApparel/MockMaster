@@ -19,11 +19,36 @@
     const $designImage = $root.find('.mockmaster-designer__design-image');
     const $uploadInput = $root.find('.mockmaster-designer__upload-input');
     const $uploadList = $root.find('[data-role="design-uploads"]');
+    const $altViewButtons = $root.find('.mockmaster-designer__alt-view');
     const $placementButtons = $root.find('.mockmaster-designer__placement-options button');
     const $stage = $root.find('.mockmaster-designer__image-stage');
     const uploadedDesigns = [];
     let isDragging = false;
     const dragNamespace = `.mockmasterDesigner${Math.random().toString(36).slice(2)}`;
+    const sideImage = data.ColorDirectSideImage || data.colorSideImage || '';
+    let currentView = 'front';
+    let currentColorImage = '';
+    const altViewImages = {
+      left: sideImage,
+      back: data.colorBackImage || '',
+      right: sideImage,
+    };
+
+    function setBaseImageForView(view) {
+      const viewImage = altViewImages[view];
+      const fallbackImage = currentColorImage || data.defaultImage || '';
+      const imageToUse = viewImage || fallbackImage;
+
+      if (imageToUse) {
+        $baseImage.attr('src', imageToUse);
+      }
+
+      if (view === 'right' && viewImage) {
+        $baseImage.addClass('is-flipped');
+      } else {
+        $baseImage.removeClass('is-flipped');
+      }
+    }
 
     function renderColors() {
       const colors = data.colors || {};
@@ -39,14 +64,12 @@
           const color = colors[key];
           const activeClass = index === 0 ? 'is-active' : '';
           const label = color.label || key;
+          const labelText = String(label).toUpperCase();
           const swatchImage = color.swatch;
           const styleAttr = swatchImage ? `style="background-image: url('${swatchImage}');"` : '';
           const imageClass = swatchImage ? 'has-image' : '';
           return `
-            <button type="button" class="mockmaster-designer__swatch ${activeClass} ${imageClass}" data-color="${key}" ${styleAttr} aria-label="${label}">
-              <span class="mockmaster-designer__swatch-text">${label}</span>
-              <span class="mockmaster-designer__swatch-tooltip">${label}</span>
-            </button>
+            <button type="button" class="mockmaster-designer__swatch ${activeClass} ${imageClass}" data-color="${key}" data-label="${labelText}" ${styleAttr} aria-label="${label}"></button>
           `;
         })
         .join('');
@@ -54,7 +77,8 @@
       $swatches.html(html);
       const firstKey = entries[0];
       if (firstKey && colors[firstKey] && colors[firstKey].image) {
-        $baseImage.attr('src', colors[firstKey].image);
+        currentColorImage = colors[firstKey].image;
+        setBaseImageForView(currentView);
       }
 
       renderQuantities(firstKey);
@@ -102,7 +126,8 @@
 
       const color = data.colors && data.colors[colorKey];
       if (color && color.image) {
-        $baseImage.attr('src', color.image);
+        currentColorImage = color.image;
+        setBaseImageForView(currentView);
       }
 
       renderQuantities(colorKey);
@@ -184,6 +209,15 @@
         width: placementData.width,
         transform: 'translate(-50%, -50%)',
       });
+    });
+
+    $root.on('click', '.mockmaster-designer__alt-view', function () {
+      const view = $(this).data('view');
+      $altViewButtons.removeClass('is-active');
+      $(this).addClass('is-active');
+      currentView = view;
+
+      setBaseImageForView(view);
     });
 
     renderColors();
