@@ -92,6 +92,10 @@
   object-fit: contain;
 }
 
+.mockmaster-designer__base-image.is-flipped {
+  transform: scaleX(-1);
+}
+
 .mockmaster-designer__design-image {
   width: 40%;
   opacity: 0;
@@ -120,6 +124,19 @@
   font-size: 12px;
   text-transform: uppercase;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.mockmaster-designer__alt-view-image {
+  height: auto;
+  display: block;
+}
+
+.mockmaster-designer__alt-view-image.is-flipped {
+  transform: scaleX(-1);
 }
 
 .mockmaster-designer__add-to-cart {
@@ -156,16 +173,14 @@
 
 .mockmaster-designer__swatches {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+  grid-template-columns: repeat(auto-fit, 53px);
+  grid-auto-rows: 39px;
   gap: 8px;
 }
 
 .mockmaster-designer__swatch {
   border: 1px solid var(--mm-arc-color, #1a1a1a);
-  padding: 8px;
-  text-align: center;
-  font-size: 12px;
-  text-transform: uppercase;
+  padding: 0;
   cursor: pointer;
   position: relative;
   background: #fff;
@@ -173,6 +188,51 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
+  width: 53px;
+  height: 39px;
+  background-size: cover;
+  background-position: center;
+}
+
+.mockmaster-designer__swatch::after {
+  content: attr(data-label);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  background: #111;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.2;
+  padding: 3px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 2;
+}
+
+.mockmaster-designer__swatch::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 1px);
+  transform: translateX(-50%);
+  border-width: 5px 5px 0 5px;
+  border-style: solid;
+  border-color: #111 transparent transparent transparent;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 2;
+}
+
+.mockmaster-designer__swatch:hover::after,
+.mockmaster-designer__swatch:hover::before,
+.mockmaster-designer__swatch:focus-visible::after,
+.mockmaster-designer__swatch:focus-visible::before {
+  opacity: 1;
 }
 
 .mockmaster-designer__swatch.is-active {
