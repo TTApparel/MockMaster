@@ -40,6 +40,15 @@
     },
   };
 
+  const placementLabels = {
+    'left-chest': 'Left Chest',
+    'right-chest': 'Right Chest',
+    'full-chest': 'Full Chest',
+    'left-sleeve': 'Left Sleeve',
+    'right-sleeve': 'Right Sleeve',
+    back: 'Back',
+  };
+
   function initDesigner($root) {
     const $categories = $root.find('.mockmaster-designer__category');
     const $panels = $root.find('.mockmaster-designer__panel');
@@ -54,8 +63,9 @@
     const $placementStatus = $root.find('[data-role="placement-status"]');
     const $placementSize = $root.find('[data-role="placement-size"]');
     const $placementDimensions = $root.find('[data-role="placement-dimensions"]');
+    const $placementSave = $root.find('[data-role="placement-save"]');
     const $stage = $root.find('.mockmaster-designer__image-stage');
-    const uploadedDesigns = [];
+    const savedDesigns = [];
     let isDragging = false;
     const dragNamespace = `.mockmasterDesigner${Math.random().toString(36).slice(2)}`;
     const sideImage = data.ColorDirectSideImage || data.colorSideImage || '';
@@ -64,6 +74,8 @@
     let currentDesignName = '';
     let currentPlacement = null;
     let currentPlacementSize = null;
+    let isPlacementLocked = false;
+    let currentDesignPosition = null;
     const fallbackViewImages = {
       front: '',
       left: sideImage,
@@ -166,6 +178,32 @@
       $placementSize.val(clampedSize);
     }
 
+    function getPlacementDimensionsText(placement, sizeOverride) {
+      if (!placement) {
+        return '--';
+      }
+
+      const sizeConfig = getPlacementSizeConfig(placement);
+      if (!sizeConfig) {
+        return '--';
+      }
+
+      const size = sizeOverride ?? currentPlacementSize ?? sizeConfig.default;
+      const aspect = getDesignAspectRatio();
+      let width = size;
+      let height = size;
+
+      if (aspect >= 1) {
+        width = size;
+        height = size / aspect;
+      } else {
+        height = size;
+        width = size * aspect;
+      }
+
+      return `Approx. size: ${width.toFixed(1)}" W x ${height.toFixed(1)}" H`;
+    }
+
     function applyPlacement(placement) {
       const placementData = placements[placement];
       if (!placementData) {
@@ -186,31 +224,109 @@
       });
     }
 
+    function getDesignPositionPercent() {
+      const stageWidth = $stage.outerWidth() || 0;
+      const stageHeight = $stage.outerHeight() || 0;
+      const leftValue = $designImage.css('left') || '0';
+      const topValue = $designImage.css('top') || '0';
+      const leftIsPercent = leftValue.includes('%');
+      const topIsPercent = topValue.includes('%');
+      const leftNumber = parseFloat(leftValue) || 0;
+      const topNumber = parseFloat(topValue) || 0;
+
+      const leftPercent =
+        leftIsPercent || !stageWidth ? leftNumber : Math.min(100, Math.max(0, (leftNumber / stageWidth) * 100));
+      const topPercent =
+        topIsPercent || !stageHeight ? topNumber : Math.min(100, Math.max(0, (topNumber / stageHeight) * 100));
+
+      return {
+        left: leftPercent,
+        top: topPercent,
+      };
+    }
+
+    function formatPositionText(position) {
+      if (!position) {
+        return 'Position: --';
+      }
+
+      return `Position: ${position.left.toFixed(1)}% L, ${position.top.toFixed(1)}% T`;
+    }
+
+    function applyDesignPosition(position) {
+      if (!position) {
+        return;
+      }
+
+      $designImage.css({
+        left: `${position.left}%`,
+        top: `${position.top}%`,
+        transform: 'translate(-50%, -50%)',
+      });
+    }
+
     function updatePlacementDimensions() {
       if (!$placementDimensions.length || !currentPlacement) {
         return;
       }
 
-      const sizeConfig = getPlacementSizeConfig(currentPlacement);
-      if (!sizeConfig) {
-        $placementDimensions.text('--');
+      $placementDimensions.text(getPlacementDimensionsText(currentPlacement));
+    }
+
+    function setPlacementLockState() {
+      const locked = isPlacementLocked;
+      $placementButtons.prop('disabled', locked);
+      $placementSize.prop('disabled', locked);
+      $designImage.toggleClass('is-locked', locked);
+
+      if ($placementSave.length) {
+        $placementSave.prop('disabled', locked);
+        $placementSave.text(locked ? 'Saved' : 'Save placement');
+      }
+    }
+
+    function renderSavedDesigns() {
+      if (!$uploadList.length) {
         return;
       }
 
-      const size = currentPlacementSize ?? sizeConfig.default;
-      const aspect = getDesignAspectRatio();
-      let width = size;
-      let height = size;
-
-      if (aspect >= 1) {
-        width = size;
-        height = size / aspect;
-      } else {
-        height = size;
-        width = size * aspect;
+      if (!savedDesigns.length) {
+        $uploadList.html('<li>No saved placements yet.</li>');
+        return;
       }
 
-      $placementDimensions.text(`Approx. size: ${width.toFixed(1)}" W x ${height.toFixed(1)}" H`);
+      const listItems = savedDesigns
+        .map((entry) => {
+          return `
+            <li class="mockmaster-designer__upload-item">
+              <div>
+                <span class="mockmaster-designer__upload-name">${entry.name}</span>
+                <span class="mockmaster-designer__upload-meta">${entry.placementLabel} · ${entry.dimensions} · ${formatPositionText(entry.position)}</span>
+              </div>
+              <button type="button" class="mockmaster-designer__upload-edit" data-design="${entry.name}">Edit</button>
+            </li>
+          `;
+        })
+        .join('');
+
+      $uploadList.html(listItems);
+    }
+
+    function setViewForPlacement(placement) {
+      let nextView = 'front';
+      if (placement === 'left-sleeve') {
+        nextView = 'left';
+      } else if (placement === 'right-sleeve') {
+        nextView = 'right';
+      } else if (placement === 'back') {
+        nextView = 'back';
+      }
+
+      currentView = nextView;
+      $altViewButtons.removeClass('is-active');
+      $altViewButtons.filter(`[data-view="${nextView}"]`).addClass('is-active');
+      setBaseImageForView(nextView);
+      setAltViewButtonImages();
     }
 
     function setBaseImageForView(view) {
@@ -375,12 +491,17 @@
         return;
       }
 
-      uploadedDesigns.push(file.name);
       currentDesignName = file.name;
+      currentPlacement = null;
+      currentPlacementSize = null;
+      isPlacementLocked = false;
+      currentDesignPosition = null;
       updatePlacementStatus();
+      setPlacementLockState();
+      $placementButtons.removeClass('is-active');
+      $placementDimensions.text('--');
       if ($uploadList.length) {
-        const listItems = uploadedDesigns.map((name) => `<li>${name}</li>`).join('');
-        $uploadList.html(listItems);
+        renderSavedDesigns();
       }
 
       const reader = new FileReader();
@@ -403,13 +524,16 @@
       if (!$designImage.attr('src')) {
         return;
       }
+      if (isPlacementLocked) {
+        return;
+      }
 
       isDragging = true;
       event.preventDefault();
     });
 
     $(document).on(`mousemove${dragNamespace}`, function (event) {
-      if (!isDragging) {
+      if (!isDragging || isPlacementLocked) {
         return;
       }
 
@@ -446,24 +570,11 @@
 
       currentPlacement = placement;
       currentPlacementSize = null;
+      currentDesignPosition = null;
       updatePlacementSlider(placement);
       applyPlacement(placement);
       updatePlacementDimensions();
-
-      let nextView = 'front';
-      if (placement === 'left-sleeve') {
-        nextView = 'left';
-      } else if (placement === 'right-sleeve') {
-        nextView = 'right';
-      } else if (placement === 'back') {
-        nextView = 'back';
-      }
-
-      currentView = nextView;
-      $altViewButtons.removeClass('is-active');
-      $altViewButtons.filter(`[data-view="${nextView}"]`).addClass('is-active');
-      setBaseImageForView(nextView);
-      setAltViewButtonImages();
+      setViewForPlacement(placement);
     });
 
     $placementSize.on('input change', function () {
@@ -479,14 +590,65 @@
       }
     });
 
-    $root.on('click', '.mockmaster-designer__alt-view', function () {
-      const view = $(this).data('view');
-      $altViewButtons.removeClass('is-active');
-      $(this).addClass('is-active');
-      currentView = view;
+    $placementSave.on('click', function () {
+      if (!currentDesignName || !currentPlacement) {
+        $placementStatus.text('Select a design and placement before saving.');
+        return;
+      }
 
-      setBaseImageForView(view);
-      setAltViewButtonImages();
+      currentDesignPosition = getDesignPositionPercent();
+      const sizeConfig = getPlacementSizeConfig(currentPlacement);
+      const size = currentPlacementSize ?? (sizeConfig ? sizeConfig.default : null);
+      const placementLabel = placementLabels[currentPlacement] || currentPlacement;
+      const dimensions = getPlacementDimensionsText(currentPlacement, size);
+      const existingIndex = savedDesigns.findIndex((entry) => entry.name === currentDesignName);
+      const nextEntry = {
+        name: currentDesignName,
+        placement: currentPlacement,
+        placementLabel,
+        size,
+        dimensions,
+        position: currentDesignPosition,
+      };
+
+      if (existingIndex >= 0) {
+        savedDesigns[existingIndex] = nextEntry;
+      } else {
+        savedDesigns.push(nextEntry);
+      }
+
+      isPlacementLocked = true;
+      setPlacementLockState();
+      renderSavedDesigns();
+    });
+
+    $root.on('click', '.mockmaster-designer__upload-edit', function () {
+      const designName = $(this).data('design');
+      const entry = savedDesigns.find((saved) => saved.name === designName);
+      if (!entry) {
+        return;
+      }
+
+      currentDesignName = entry.name;
+      currentPlacement = entry.placement;
+      currentPlacementSize = entry.size;
+      currentDesignPosition = entry.position;
+      isPlacementLocked = false;
+      updatePlacementStatus();
+      setPlacementLockState();
+
+      $placementButtons.removeClass('is-active');
+      $placementButtons.filter(`[data-placement="${entry.placement}"]`).addClass('is-active');
+      updatePlacementSlider(entry.placement);
+      applyPlacement(entry.placement);
+      applyDesignPosition(entry.position);
+      updatePlacementDimensions();
+      setViewForPlacement(entry.placement);
+
+      $categories.removeClass('is-active');
+      $categories.filter('[data-category="placement"]').addClass('is-active');
+      $panels.removeClass('is-active');
+      $panels.filter('[data-panel="placement"]').addClass('is-active');
     });
 
     $root.on('click', '.mockmaster-designer__alt-view', function () {
@@ -502,6 +664,8 @@
     renderColors();
     setAltViewButtonImages();
     updatePlacementStatus();
+    renderSavedDesigns();
+    setPlacementLockState();
   }
 
   $(document).ready(function () {
