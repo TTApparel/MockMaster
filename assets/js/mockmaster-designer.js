@@ -433,6 +433,7 @@
     const colorDefaults = data.colorCounterDefaults || {};
     let lastColorCounterCanvas = null;
     let lastColorCounterFile = null;
+    let currentColorPalette = [];
 
     function deriveViewUrls(frontUrl) {
       if (!frontUrl) {
@@ -1042,11 +1043,14 @@
       }
 
       const items = palette
-        .map((entry) => {
+        .map((entry, index) => {
           const percent = entry.percent.toFixed(2);
           return `
             <div class="mockmaster-designer__color-counter-swatch">
-              <span class="mockmaster-designer__color-counter-color" style="background:${entry.hex}"></span>
+              <label class="mockmaster-designer__color-counter-color-picker">
+                <span class="mockmaster-designer__color-counter-color" style="background:${entry.hex}"></span>
+                <input type="color" value="${entry.hex}" data-role="color-swatch-input" data-index="${index}" />
+              </label>
               <div class="mockmaster-designer__color-counter-meta">
                 <span>${entry.hex}</span>
                 <span>${percent}%</span>
@@ -1128,7 +1132,8 @@
       const estimated = result.final_color_count || 0;
 
       $colorCount.text(typeof estimated === 'number' ? String(estimated) : '--');
-      renderPalette(palette);
+      currentColorPalette = palette.map((entry) => ({ ...entry }));
+      renderPalette(currentColorPalette);
 
       $colorCountInput.val(estimated);
       $colorPaletteInput.val(JSON.stringify(palette));
@@ -1203,6 +1208,40 @@
         setDesignImageVisibility(true);
       }
     }
+
+    $root.on('input change', '[data-role="color-swatch-input"]', function () {
+      const index = parseInt($(this).data('index'), 10);
+      if (Number.isNaN(index) || !currentColorPalette[index]) {
+        return;
+      }
+      const nextHex = $(this).val();
+      const nextRgb = parseHexColor(nextHex);
+      currentColorPalette[index] = {
+        ...currentColorPalette[index],
+        hex: nextHex.toUpperCase(),
+        rgb: nextRgb,
+      };
+      renderPalette(currentColorPalette);
+      $colorPaletteInput.val(JSON.stringify(currentColorPalette));
+      if (data.ajaxUrl && data.colorCounterNonce) {
+        $.post(data.ajaxUrl, {
+          action: 'mockmaster_designer_store_color_count',
+          nonce: data.colorCounterNonce,
+          estimated_colors: currentColorPalette.length,
+          palette: JSON.stringify(currentColorPalette),
+          settings: JSON.stringify(getColorCounterSettings()),
+        });
+      }
+      if (lastColorCounterCanvas) {
+        const settings = getColorCounterSettings();
+        const previewDataUrl = renderQuantizedPreview(lastColorCounterCanvas, currentColorPalette, settings);
+        if (previewDataUrl && $designImage.length) {
+          $designImage.attr('src', previewDataUrl);
+          $designImage.addClass('is-visible');
+          setDesignImageVisibility(true);
+        }
+      }
+    });
 
     $root.on('click', '.mockmaster-designer__category', function () {
       const category = $(this).data('category');

@@ -362,6 +362,19 @@
   color: #444;
 }
 
+.mockmaster-designer__color-counter-color-picker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.mockmaster-designer__color-counter-color-picker input[type='color'] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
 .mockmaster-designer__color-counter-color {
   width: 18px;
   height: 18px;
