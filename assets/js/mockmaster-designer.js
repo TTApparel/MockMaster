@@ -795,6 +795,7 @@
 
       $panels.removeClass('is-active');
       $panels.filter(`[data-panel="${category}"]`).addClass('is-active');
+      $stage.toggleClass('is-design-preview', category === 'design');
 
       if (category === 'design') {
         updateSelectQuantitiesButton();
