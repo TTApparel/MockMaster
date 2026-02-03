@@ -987,6 +987,9 @@
 
     if ($colorCounter.length) {
       $colorCounter.on('input change', 'input, select', function () {
+        if ($(this).data('role') === 'color-swatch-input') {
+          return;
+        }
         if (lastColorCounterCanvas) {
           analyzeImageColors(lastColorCounterCanvas);
         }
