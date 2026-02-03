@@ -49,6 +49,341 @@
     back: 'Back',
   };
 
+  const COLOR_COUNTER_CONFIG = {
+    MAX_WORKING_DIM: 2000,
+    MAX_PREVIEW_DIM: 800,
+    MAX_SAMPLES: 200000,
+    DEFAULT_SEED: 1337,
+    DEFAULT_MERGE_DISTANCE: 10,
+  };
+
+  function createSeededRandom(seed) {
+    let value = seed >>> 0;
+    return function () {
+      value ^= value << 13;
+      value ^= value >>> 17;
+      value ^= value << 5;
+      return (value >>> 0) / 4294967296;
+    };
+  }
+
+  function parseHexColor(hex) {
+    const cleaned = String(hex || '').replace('#', '');
+    if (cleaned.length !== 6) {
+      return [255, 255, 255];
+    }
+    return [
+      parseInt(cleaned.slice(0, 2), 16),
+      parseInt(cleaned.slice(2, 4), 16),
+      parseInt(cleaned.slice(4, 6), 16),
+    ];
+  }
+
+  function rgbToHex(rgb) {
+    return (
+      '#' +
+      rgb
+        .map((value) => {
+          const hex = Math.round(value).toString(16).padStart(2, '0');
+          return hex.toUpperCase();
+        })
+        .join('')
+    );
+  }
+
+  function createCanvasFromImage(image, maxDimension, allowUpscale) {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (!context) {
+      return null;
+    }
+
+    const width = image.naturalWidth || image.width;
+    const height = image.naturalHeight || image.height;
+    const max = Math.max(width, height);
+    const scale = max > maxDimension ? maxDimension / max : allowUpscale ? maxDimension / max : 1;
+    const clampedScale = allowUpscale ? scale : Math.min(1, scale);
+
+    canvas.width = Math.max(1, Math.round(width * clampedScale));
+    canvas.height = Math.max(1, Math.round(height * clampedScale));
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    return canvas;
+  }
+
+  function parseSvgLength(value) {
+    if (!value) {
+      return null;
+    }
+    const match = String(value).trim().match(/^([0-9.]+)(px)?$/i);
+    if (!match) {
+      return null;
+    }
+    return parseFloat(match[1]);
+  }
+
+  function parseSvgSize(svgText) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgText, 'image/svg+xml');
+    const svg = doc.querySelector('svg');
+    if (!svg) {
+      return { width: 1000, height: 1000 };
+    }
+
+    const widthAttr = parseSvgLength(svg.getAttribute('width'));
+    const heightAttr = parseSvgLength(svg.getAttribute('height'));
+    if (widthAttr && heightAttr) {
+      return { width: widthAttr, height: heightAttr };
+    }
+
+    const viewBox = svg.getAttribute('viewBox');
+    if (viewBox) {
+      const parts = viewBox.trim().split(/\s+/).map(Number);
+      if (parts.length === 4 && parts.every((part) => !Number.isNaN(part))) {
+        return { width: parts[2], height: parts[3] };
+      }
+    }
+
+    return { width: 1000, height: 1000 };
+  }
+
+  function loadImageFromBlob(blob) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(blob);
+      const image = new Image();
+      image.onload = function () {
+        URL.revokeObjectURL(url);
+        resolve(image);
+      };
+      image.onerror = function () {
+        URL.revokeObjectURL(url);
+        reject(new Error('Unable to load image.'));
+      };
+      image.src = url;
+    });
+  }
+
+  function buildWorkingCanvasFromRaster(file, maxDimension) {
+    return loadImageFromBlob(file).then((image) => {
+      const canvas = createCanvasFromImage(image, maxDimension, false);
+      return { canvas, image };
+    });
+  }
+
+  function buildWorkingCanvasFromSvg(file, maxDimension) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        const svgText = event.target.result;
+        const svgSize = parseSvgSize(svgText);
+        const max = Math.max(svgSize.width, svgSize.height);
+        const scale = max > maxDimension ? maxDimension / max : 1;
+        const pixelRatio = window.devicePixelRatio || 1;
+        const targetWidth = Math.max(1, Math.round(svgSize.width * scale * pixelRatio));
+        const targetHeight = Math.max(1, Math.round(svgSize.height * scale * pixelRatio));
+        const blob = new Blob([svgText], { type: 'image/svg+xml' });
+
+        loadImageFromBlob(blob)
+          .then((image) => {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            if (!context) {
+              reject(new Error('Unable to create canvas.'));
+              return;
+            }
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+            context.drawImage(image, 0, 0, canvas.width, canvas.height);
+            resolve({ canvas, image });
+          })
+          .catch(reject);
+      };
+      reader.onerror = function () {
+        reject(new Error('Unable to read SVG.'));
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  function isSvgFile(file) {
+    return file && (file.type === 'image/svg+xml' || /\.svg$/i.test(file.name || ''));
+  }
+
+  function createPreviewCanvasFromWorkingCanvas(workingCanvas, maxDimension) {
+    const previewCanvas = document.createElement('canvas');
+    const context = previewCanvas.getContext('2d');
+    if (!context) {
+      return null;
+    }
+    const width = workingCanvas.width;
+    const height = workingCanvas.height;
+    const max = Math.max(width, height);
+    const scale = max > maxDimension ? maxDimension / max : 1;
+    previewCanvas.width = Math.max(1, Math.round(width * scale));
+    previewCanvas.height = Math.max(1, Math.round(height * scale));
+    context.drawImage(workingCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    return previewCanvas;
+  }
+
+  function samplePixels(imageData, options) {
+    const { alphaThreshold, compositeOnBackground, backgroundRgb, maxSamples } = options;
+    const pixels = [];
+    const data = imageData.data;
+    const totalPixels = data.length / 4;
+    const step = totalPixels > maxSamples ? Math.ceil(totalPixels / maxSamples) : 1;
+
+    for (let i = 0; i < data.length; i += 4 * step) {
+      const alpha = data[i + 3];
+      if (alpha === 0 || alpha < alphaThreshold) {
+        continue;
+      }
+
+      let r = data[i];
+      let g = data[i + 1];
+      let b = data[i + 2];
+      if (alpha < 255 && compositeOnBackground) {
+        const ratio = alpha / 255;
+        r = Math.round(r * ratio + backgroundRgb[0] * (1 - ratio));
+        g = Math.round(g * ratio + backgroundRgb[1] * (1 - ratio));
+        b = Math.round(b * ratio + backgroundRgb[2] * (1 - ratio));
+      }
+
+      pixels.push([r, g, b]);
+    }
+
+    return pixels;
+  }
+
+  function kMeansQuantize(pixels, k, seed) {
+    if (!pixels.length) {
+      return { centroids: [], assignments: [] };
+    }
+
+    const random = createSeededRandom(seed);
+    const centroids = [];
+    const assignments = new Array(pixels.length);
+
+    for (let i = 0; i < k; i += 1) {
+      const index = Math.floor(random() * pixels.length);
+      centroids.push(pixels[index].slice());
+    }
+
+    const maxIterations = 10;
+    for (let iteration = 0; iteration < maxIterations; iteration += 1) {
+      const sums = Array.from({ length: k }, () => [0, 0, 0, 0]);
+
+      for (let i = 0; i < pixels.length; i += 1) {
+        const pixel = pixels[i];
+        let nearest = 0;
+        let nearestDistance = Number.POSITIVE_INFINITY;
+
+        for (let c = 0; c < centroids.length; c += 1) {
+          const centroid = centroids[c];
+          const dr = pixel[0] - centroid[0];
+          const dg = pixel[1] - centroid[1];
+          const db = pixel[2] - centroid[2];
+          const distance = dr * dr + dg * dg + db * db;
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearest = c;
+          }
+        }
+
+        assignments[i] = nearest;
+        sums[nearest][0] += pixel[0];
+        sums[nearest][1] += pixel[1];
+        sums[nearest][2] += pixel[2];
+        sums[nearest][3] += 1;
+      }
+
+      for (let c = 0; c < centroids.length; c += 1) {
+        if (sums[c][3] === 0) {
+          const replacementIndex = Math.floor(random() * pixels.length);
+          centroids[c] = pixels[replacementIndex].slice();
+          continue;
+        }
+        centroids[c] = [
+          sums[c][0] / sums[c][3],
+          sums[c][1] / sums[c][3],
+          sums[c][2] / sums[c][3],
+        ];
+      }
+    }
+
+    return { centroids, assignments };
+  }
+
+  function buildPalette(centroids, assignments, totalPixels, minPct, minPixels) {
+    if (!centroids.length) {
+      return [];
+    }
+
+    const counts = new Array(centroids.length).fill(0);
+    assignments.forEach((cluster) => {
+      counts[cluster] += 1;
+    });
+
+    const palette = centroids
+      .map((centroid, index) => {
+        const pixelCount = counts[index];
+        const percent = totalPixels ? (pixelCount / totalPixels) * 100 : 0;
+        return {
+          rgb: centroid.map((value) => Math.round(value)),
+          hex: rgbToHex(centroid),
+          pixel_count: pixelCount,
+          percent,
+        };
+      })
+      .filter((entry) => {
+        if (entry.pixel_count < minPixels) {
+          return false;
+        }
+        return entry.percent >= minPct;
+      })
+      .sort((a, b) => b.percent - a.percent);
+
+    return palette;
+  }
+
+  function mergePaletteByDistance(palette, totalPixels, threshold) {
+    if (!palette.length) {
+      return [];
+    }
+
+    const merged = [];
+
+    palette.forEach((entry) => {
+      const match = merged.find((candidate) => {
+        const dr = candidate.rgb[0] - entry.rgb[0];
+        const dg = candidate.rgb[1] - entry.rgb[1];
+        const db = candidate.rgb[2] - entry.rgb[2];
+        const distance = Math.sqrt(dr * dr + dg * dg + db * db);
+        return distance < threshold;
+      });
+
+      if (match) {
+        const combined = match.pixel_count + entry.pixel_count;
+        match.rgb = [
+          (match.rgb[0] * match.pixel_count + entry.rgb[0] * entry.pixel_count) / combined,
+          (match.rgb[1] * match.pixel_count + entry.rgb[1] * entry.pixel_count) / combined,
+          (match.rgb[2] * match.pixel_count + entry.rgb[2] * entry.pixel_count) / combined,
+        ];
+        match.pixel_count = combined;
+        match.hex = rgbToHex(match.rgb);
+      } else {
+        merged.push({ ...entry });
+      }
+    });
+
+    return merged
+      .map((entry) => ({
+        ...entry,
+        rgb: entry.rgb.map((value) => Math.round(value)),
+        hex: rgbToHex(entry.rgb),
+        percent: totalPixels ? (entry.pixel_count / totalPixels) * 100 : 0,
+      }))
+      .sort((a, b) => b.percent - a.percent);
+  }
+
   function initDesigner($root) {
     const $categories = $root.find('.mockmaster-designer__category');
     const $panels = $root.find('.mockmaster-designer__panel');
@@ -58,6 +393,18 @@
     const $designImage = $root.find('.mockmaster-designer__design-image');
     const $uploadInput = $root.find('.mockmaster-designer__upload-input');
     const $uploadList = $root.find('[data-role="design-uploads"]');
+    const $colorCounter = $root.find('[data-role="color-counter"]');
+    const $colorCount = $root.find('[data-role="color-count"]');
+    const $colorPalette = $root.find('[data-role="color-palette"]');
+    const $colorPreview = $root.find('[data-role="color-preview"]');
+    const $colorCountInput = $root.find('[data-role="color-count-input"]');
+    const $colorPaletteInput = $root.find('[data-role="color-palette-input"]');
+    const $colorSettingsInput = $root.find('[data-role="color-settings-input"]');
+    const $colorCountControl = $root.find('[data-role="color-count-control"]');
+    const $colorMinPct = $root.find('[data-role="color-min-pct"]');
+    const $colorAlpha = $root.find('[data-role="color-alpha-threshold"]');
+    const $colorBackground = $root.find('[data-role="color-background"]');
+    const $colorComposite = $root.find('[data-role="color-composite"]');
     let $selectQuantities = $root.find('[data-role="select-quantities"]');
     const $altViewButtons = $root.find('.mockmaster-designer__alt-view');
     const $placementButtons = $root.find('.mockmaster-designer__placement-options button');
@@ -83,6 +430,9 @@
       back: data.colorBackImage || '',
       right: sideImage,
     };
+    const colorDefaults = data.colorCounterDefaults || {};
+    let lastColorCounterCanvas = null;
+    let lastColorCounterFile = null;
 
     function deriveViewUrls(frontUrl) {
       if (!frontUrl) {
@@ -624,6 +974,236 @@
       $quantityOptions.html(rows);
     }
 
+    updateColorCounterControls();
+
+    if ($colorCounter.length) {
+      $colorCounter.on('input change', 'input, select', function () {
+        if (lastColorCounterCanvas) {
+          analyzeImageColors(lastColorCounterCanvas);
+        }
+      });
+    }
+
+    function getColorCounterSettings() {
+      const colorCountValue = parseInt($colorCountControl.val(), 10);
+      const minPctValue = parseFloat($colorMinPct.val());
+      const alphaValue = parseInt($colorAlpha.val(), 10);
+      const compositeValue = String($colorComposite.val()) === '1';
+
+      const defaultCount = colorDefaults.color_count || colorDefaults.k || 8;
+      const colorCount = Number.isNaN(colorCountValue) ? defaultCount : colorCountValue;
+
+      return {
+        color_count: Math.min(8, Math.max(1, colorCount)),
+        k: Math.min(8, Math.max(1, colorCount)),
+        min_pct: Number.isNaN(minPctValue) ? colorDefaults.min_pct || 0.5 : minPctValue,
+        min_pixels: colorDefaults.min_pixels || 0,
+        alpha_threshold: Number.isNaN(alphaValue) ? colorDefaults.alpha_threshold || 20 : alphaValue,
+        background: $colorBackground.val() || colorDefaults.background || '#ffffff',
+        composite: compositeValue,
+        max_working_dim: colorDefaults.max_working_dim || COLOR_COUNTER_CONFIG.MAX_WORKING_DIM,
+        max_preview_dim: colorDefaults.max_preview_dim || COLOR_COUNTER_CONFIG.MAX_PREVIEW_DIM,
+        max_samples: colorDefaults.max_samples || COLOR_COUNTER_CONFIG.MAX_SAMPLES,
+        seed: colorDefaults.seed || COLOR_COUNTER_CONFIG.DEFAULT_SEED,
+        merge_distance: colorDefaults.merge_distance || COLOR_COUNTER_CONFIG.DEFAULT_MERGE_DISTANCE,
+      };
+    }
+
+    function updateColorCounterControls() {
+      if (!$colorCounter.length) {
+        return;
+      }
+
+      if (colorDefaults.color_count || colorDefaults.k) {
+        $colorCountControl.val(colorDefaults.color_count || colorDefaults.k);
+      }
+      if (typeof colorDefaults.min_pct !== 'undefined') {
+        $colorMinPct.val(colorDefaults.min_pct);
+      }
+      if (typeof colorDefaults.alpha_threshold !== 'undefined') {
+        $colorAlpha.val(colorDefaults.alpha_threshold);
+      }
+      if (colorDefaults.background) {
+        $colorBackground.val(colorDefaults.background);
+      }
+      if (typeof colorDefaults.composite !== 'undefined') {
+        $colorComposite.val(colorDefaults.composite ? '1' : '0');
+      }
+    }
+
+    function renderPalette(palette) {
+      if (!$colorPalette.length) {
+        return;
+      }
+
+      if (!palette.length) {
+        $colorPalette.html('<span class="mockmaster-designer__color-counter-empty">No colors detected.</span>');
+        return;
+      }
+
+      const items = palette
+        .map((entry) => {
+          const percent = entry.percent.toFixed(2);
+          return `
+            <div class="mockmaster-designer__color-counter-swatch">
+              <span class="mockmaster-designer__color-counter-color" style="background:${entry.hex}"></span>
+              <div class="mockmaster-designer__color-counter-meta">
+                <span>${entry.hex}</span>
+                <span>${percent}%</span>
+              </div>
+            </div>
+          `;
+        })
+        .join('');
+
+      $colorPalette.html(items);
+    }
+
+    function renderQuantizedPreview(workingCanvas, palette, settings) {
+      if (!$colorPreview.length) {
+        return;
+      }
+
+      const canvas = $colorPreview.get(0);
+      if (!canvas) {
+        return;
+      }
+
+      const previewContext = canvas.getContext('2d');
+      if (!previewContext) {
+        return;
+      }
+
+      if (!palette.length) {
+        previewContext.clearRect(0, 0, canvas.width, canvas.height);
+        return;
+      }
+
+      const previewCanvas = createPreviewCanvasFromWorkingCanvas(workingCanvas, settings.max_preview_dim);
+      if (!previewCanvas) {
+        return;
+      }
+
+      canvas.width = previewCanvas.width;
+      canvas.height = previewCanvas.height;
+      previewContext.clearRect(0, 0, canvas.width, canvas.height);
+      const previewData = previewCanvas.getContext('2d').getImageData(0, 0, previewCanvas.width, previewCanvas.height);
+      const data = previewData.data;
+      const centroids = palette.map((entry) => entry.rgb);
+
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const alpha = data[i + 3];
+        if (alpha === 0 || alpha < settings.alpha_threshold) {
+          data[i + 3] = 0;
+          continue;
+        }
+        let nearest = 0;
+        let nearestDistance = Number.POSITIVE_INFINITY;
+
+        for (let c = 0; c < centroids.length; c += 1) {
+          const centroid = centroids[c];
+          const dr = r - centroid[0];
+          const dg = g - centroid[1];
+          const db = b - centroid[2];
+          const distance = dr * dr + dg * dg + db * db;
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearest = c;
+          }
+        }
+
+        data[i] = centroids[nearest][0];
+        data[i + 1] = centroids[nearest][1];
+        data[i + 2] = centroids[nearest][2];
+        data[i + 3] = alpha;
+      }
+
+      previewContext.putImageData(previewData, 0, 0);
+    }
+
+    function updateColorCounterOutputs(result, settings) {
+      if (!$colorCounter.length) {
+        return;
+      }
+
+      const palette = result.palette || [];
+      const estimated = result.final_color_count || 0;
+
+      $colorCount.text(typeof estimated === 'number' ? String(estimated) : '--');
+      renderPalette(palette);
+
+      $colorCountInput.val(estimated);
+      $colorPaletteInput.val(JSON.stringify(palette));
+      $colorSettingsInput.val(JSON.stringify(settings));
+
+      if (data.ajaxUrl && data.colorCounterNonce) {
+        $.post(data.ajaxUrl, {
+          action: 'mockmaster_designer_store_color_count',
+          nonce: data.colorCounterNonce,
+          estimated_colors: estimated,
+          palette: JSON.stringify(palette),
+          settings: JSON.stringify(settings),
+        });
+      }
+    }
+
+    function buildWorkingCanvasForFile(file) {
+      const settings = getColorCounterSettings();
+      const maxWorkingDim = settings.max_working_dim;
+
+      if (isSvgFile(file)) {
+        return buildWorkingCanvasFromSvg(file, maxWorkingDim);
+      }
+
+      return buildWorkingCanvasFromRaster(file, maxWorkingDim);
+    }
+
+    function analyzeImageColors(workingCanvas) {
+      const settings = getColorCounterSettings();
+      if (!workingCanvas) {
+        return;
+      }
+      const context = workingCanvas.getContext('2d');
+      if (!context) {
+        return;
+      }
+
+      // Quantization + noise filtering approximates screen print separations by grouping similar colors and removing tiny blends.
+      const imageData = context.getImageData(0, 0, workingCanvas.width, workingCanvas.height);
+      const pixels = samplePixels(imageData, {
+        alphaThreshold: settings.alpha_threshold,
+        compositeOnBackground: settings.composite,
+        backgroundRgb: parseHexColor(settings.background),
+        maxSamples: settings.max_samples,
+      });
+
+      if (!pixels.length) {
+        updateColorCounterOutputs({ final_color_count: 0, palette: [] }, settings);
+        return;
+      }
+
+      const { centroids, assignments } = kMeansQuantize(pixels, settings.k, settings.seed);
+      const rawPalette = buildPalette(
+        centroids,
+        assignments,
+        pixels.length,
+        settings.min_pct,
+        settings.min_pixels
+      );
+      const palette = mergePaletteByDistance(rawPalette, pixels.length, settings.merge_distance);
+
+      const result = {
+        final_color_count: palette.length,
+        palette,
+      };
+
+      updateColorCounterOutputs(result, settings);
+      renderQuantizedPreview(workingCanvas, palette, settings);
+    }
+
     $root.on('click', '.mockmaster-designer__category', function () {
       const category = $(this).data('category');
       $categories.removeClass('is-active');
@@ -677,6 +1257,18 @@
         $designImage.addClass('is-visible');
         setDesignImageVisibility(true);
         switchPanel('placement');
+
+        if ($colorCounter.length) {
+          lastColorCounterFile = file;
+          buildWorkingCanvasForFile(file)
+            .then(({ canvas }) => {
+              lastColorCounterCanvas = canvas;
+              analyzeImageColors(canvas);
+            })
+            .catch(() => {
+              updateColorCounterOutputs({ final_color_count: 0, palette: [] }, getColorCounterSettings());
+            });
+        }
       };
       reader.readAsDataURL(file);
     });
