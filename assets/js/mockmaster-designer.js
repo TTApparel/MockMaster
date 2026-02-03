@@ -2,11 +2,11 @@
   const data = window.MockMasterDesignerData || {};
 
   const placements = {
-    'left-chest': { top: '32%', left: '38%', width: '22%' },
-    'right-chest': { top: '32%', left: '56%', width: '22%' },
+    'left-chest': { top: '32%', left: '56%', width: '22%' },
+    'right-chest': { top: '32%', left: '38%', width: '22%' },
     'full-chest': { top: '34%', left: '50%', width: '42%' },
-    'left-sleeve': { top: '40%', left: '22%', width: '18%' },
-    'right-sleeve': { top: '40%', left: '78%', width: '18%' },
+    'left-sleeve': { top: '32%', left: '42%', width: '18%' },
+    'right-sleeve': { top: '32%', left: '58%', width: '18%' },
     back: { top: '38%', left: '50%', width: '40%' },
   };
 
