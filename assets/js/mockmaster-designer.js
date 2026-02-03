@@ -25,10 +25,11 @@
     const uploadedDesigns = [];
     let isDragging = false;
     const dragNamespace = `.mockmasterDesigner${Math.random().toString(36).slice(2)}`;
+    const sideImage = data.ColorDirectSideImage || data.colorSideImage || '';
     const altViewImages = {
-      left: data.colorSideImage || '',
+      left: sideImage,
       back: data.colorBackImage || '',
-      right: data.colorSideImage || '',
+      right: sideImage,
     };
 
     function renderColors() {
