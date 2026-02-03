@@ -127,25 +127,6 @@ class MockMasterDesigner {
                                     <span>COLOR COUNT</span>
                                     <input type="number" min="1" max="8" step="1" value="8" data-role="color-count-control" />
                                 </label>
-                                <label class="mockmaster-designer__color-counter-advanced">
-                                    <span>Min %</span>
-                                    <input type="number" min="0" max="100" step="0.1" value="0.5" data-role="color-min-pct" />
-                                </label>
-                                <label class="mockmaster-designer__color-counter-advanced">
-                                    <span>Alpha</span>
-                                    <input type="number" min="0" max="255" step="1" value="20" data-role="color-alpha-threshold" />
-                                </label>
-                                <label class="mockmaster-designer__color-counter-advanced">
-                                    <span>Background</span>
-                                    <input type="color" value="#ffffff" data-role="color-background" />
-                                </label>
-                                <label class="mockmaster-designer__color-counter-advanced">
-                                    <span>Composite</span>
-                                    <select data-role="color-composite">
-                                        <option value="1" selected>On background</option>
-                                        <option value="0">Keep RGB</option>
-                                    </select>
-                                </label>
                             </div>
                             <div class="mockmaster-designer__color-counter-results">
                                 <div class="mockmaster-designer__color-counter-palette" data-role="color-palette"></div>
@@ -394,27 +375,8 @@ class MockMasterDesigner {
                                 </div>
                                 <div class="mockmaster-designer__color-counter-controls">
                                     <label>
-                                    <span>COLOR COUNT</span>
-                                    <input type="number" min="1" max="8" step="1" value="8" data-role="color-count-control" />
-                                    </label>
-                                    <label class="mockmaster-designer__color-counter-advanced">
-                                        <span>Min %</span>
-                                        <input type="number" min="0" max="100" step="0.1" value="0.5" data-role="color-min-pct" />
-                                    </label>
-                                    <label class="mockmaster-designer__color-counter-advanced">
-                                        <span>Alpha</span>
-                                        <input type="number" min="0" max="255" step="1" value="20" data-role="color-alpha-threshold" />
-                                    </label>
-                                    <label class="mockmaster-designer__color-counter-advanced">
-                                        <span>Background</span>
-                                        <input type="color" value="#ffffff" data-role="color-background" />
-                                    </label>
-                                    <label class="mockmaster-designer__color-counter-advanced">
-                                        <span>Composite</span>
-                                        <select data-role="color-composite">
-                                            <option value="1" selected>On background</option>
-                                            <option value="0">Keep RGB</option>
-                                        </select>
+                                        <span>COLOR COUNT</span>
+                                        <input type="number" min="1" max="8" step="1" value="8" data-role="color-count-control" />
                                     </label>
                                 </div>
                                 <div class="mockmaster-designer__color-counter-results">
