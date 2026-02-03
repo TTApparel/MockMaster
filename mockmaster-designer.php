@@ -135,6 +135,7 @@ class MockMasterDesigner {
                             <input type="hidden" name="mockmaster_palette" data-role="color-palette-input" />
                             <input type="hidden" name="mockmaster_color_settings" data-role="color-settings-input" />
                         </div>
+                        <button type="button" class="mockmaster-designer__select-quantities mockmaster-designer__place-design is-hidden" data-role="place-design">Place Design</button>
                         <button type="button" class="mockmaster-designer__select-quantities is-hidden" data-role="select-quantities">Select Quantities</button>
                     </div>
                     <div class="mockmaster-designer__panel" data-panel="placement">
