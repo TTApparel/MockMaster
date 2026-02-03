@@ -329,6 +329,22 @@
   margin-bottom: 4px;
 }
 
+.mockmaster-designer__select-quantities {
+  width: 100%;
+  margin-top: 12px;
+  border: 1px solid var(--mm-arc-color, #1a1a1a);
+  background: var(--mm-button-bg, #fff);
+  color: var(--mm-arc-color, #1a1a1a);
+  padding: 8px 12px;
+  text-transform: uppercase;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.mockmaster-designer__select-quantities.is-hidden {
+  display: none;
+}
+
 .mockmaster-designer__placement-options {
   display: grid;
   gap: 8px;
@@ -354,6 +370,12 @@
 .mockmaster-designer__placement-options button.is-active {
   background: var(--mm-category-active-bg, #1a1a1a);
   color: var(--mm-category-active-text, #fff);
+}
+
+.mockmaster-designer__placement-options button.is-disabled,
+.mockmaster-designer__placement-options button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .mockmaster-designer__placement-slider {

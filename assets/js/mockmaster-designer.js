@@ -58,6 +58,7 @@
     const $designImage = $root.find('.mockmaster-designer__design-image');
     const $uploadInput = $root.find('.mockmaster-designer__upload-input');
     const $uploadList = $root.find('[data-role="design-uploads"]');
+    let $selectQuantities = $root.find('[data-role="select-quantities"]');
     const $altViewButtons = $root.find('.mockmaster-designer__alt-view');
     const $placementButtons = $root.find('.mockmaster-designer__placement-options button');
     const $placementStatus = $root.find('[data-role="placement-status"]');
@@ -299,6 +300,20 @@
       }
     }
 
+    function updatePlacementAvailability() {
+      const usedPlacements = savedDesigns
+        .filter((entry) => entry.name !== currentDesignName)
+        .map((entry) => entry.placement);
+
+      $placementButtons.each(function () {
+        const $button = $(this);
+        const placement = $button.data('placement');
+        const isUsed = usedPlacements.includes(placement);
+        $button.prop('disabled', isUsed || isPlacementLocked);
+        $button.toggleClass('is-disabled', isUsed);
+      });
+    }
+
     function renderSavedDesigns() {
       if (!$uploadList.length) {
         return;
@@ -306,6 +321,7 @@
 
       if (!savedDesigns.length) {
         $uploadList.html('<li>No saved placements yet.</li>');
+        updateSelectQuantitiesButton();
         return;
       }
 
@@ -327,6 +343,35 @@
         .join('');
 
       $uploadList.html(listItems);
+      updateSelectQuantitiesButton();
+      updatePlacementAvailability();
+    }
+
+    function updateSelectQuantitiesButton() {
+      if (!$selectQuantities.length) {
+        const $designPanel = $panels.filter('[data-panel="design"]');
+        if ($designPanel.length) {
+          $selectQuantities = $('<button type="button" class="mockmaster-designer__select-quantities is-hidden" data-role="select-quantities">Select Quantities</button>');
+          $designPanel.append($selectQuantities);
+        } else {
+          return;
+        }
+      }
+
+      const hasUploads = $uploadList.find('.mockmaster-designer__upload-item').length > 0;
+      $selectQuantities.toggleClass('is-hidden', !hasUploads);
+    }
+
+    function switchPanel(category) {
+      $categories.removeClass('is-active');
+      $categories.filter(`[data-category="${category}"]`).addClass('is-active');
+
+      $panels.removeClass('is-active');
+      $panels.filter(`[data-panel="${category}"]`).addClass('is-active');
+
+      if (category === 'design') {
+        updateSelectQuantitiesButton();
+      }
     }
 
     function getViewForPlacement(placement) {
@@ -562,6 +607,7 @@
       updatePlacementStatus();
       setPlacementLockState();
       $placementButtons.removeClass('is-active');
+      updatePlacementAvailability();
       $placementDimensions.text('--');
       if ($uploadList.length) {
         renderSavedDesigns();
@@ -571,6 +617,7 @@
       reader.onload = function (loadEvent) {
         $designImage.attr('src', loadEvent.target.result);
         $designImage.addClass('is-visible');
+        switchPanel('placement');
       };
       reader.readAsDataURL(file);
     });
@@ -690,6 +737,13 @@
       setPlacementLockState();
       renderSavedDesigns();
       renderAltViewOverlays();
+      switchPanel('design');
+      updateSelectQuantitiesButton();
+      updatePlacementAvailability();
+    });
+
+    $root.on('click', '[data-role="select-quantities"]', function () {
+      switchPanel('quantities');
     });
 
     $root.on('click', '.mockmaster-designer__upload-edit', function () {
@@ -710,6 +764,7 @@
       }
       updatePlacementStatus();
       setPlacementLockState();
+      updatePlacementAvailability();
 
       $placementButtons.removeClass('is-active');
       $placementButtons.filter(`[data-placement="${entry.placement}"]`).addClass('is-active');
@@ -752,6 +807,7 @@
 
       renderSavedDesigns();
       renderAltViewOverlays();
+      updatePlacementAvailability();
     });
 
     $root.on('click', '.mockmaster-designer__alt-view', function () {
