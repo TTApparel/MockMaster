@@ -129,6 +129,8 @@
         currentColorImage = color.image;
         setBaseImageForView(currentView);
       }
+      $baseImage.removeClass('is-flipped');
+      $altViewButtons.removeClass('is-active');
 
       renderQuantities(colorKey);
     });
