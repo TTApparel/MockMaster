@@ -26,11 +26,29 @@
     let isDragging = false;
     const dragNamespace = `.mockmasterDesigner${Math.random().toString(36).slice(2)}`;
     const sideImage = data.ColorDirectSideImage || data.colorSideImage || '';
+    let currentView = 'front';
+    let currentColorImage = '';
     const altViewImages = {
       left: sideImage,
       back: data.colorBackImage || '',
       right: sideImage,
     };
+
+    function setBaseImageForView(view) {
+      const viewImage = altViewImages[view];
+      const fallbackImage = currentColorImage || data.defaultImage || '';
+      const imageToUse = viewImage || fallbackImage;
+
+      if (imageToUse) {
+        $baseImage.attr('src', imageToUse);
+      }
+
+      if (view === 'right' && viewImage) {
+        $baseImage.addClass('is-flipped');
+      } else {
+        $baseImage.removeClass('is-flipped');
+      }
+    }
 
     function renderColors() {
       const colors = data.colors || {};
@@ -59,7 +77,8 @@
       $swatches.html(html);
       const firstKey = entries[0];
       if (firstKey && colors[firstKey] && colors[firstKey].image) {
-        $baseImage.attr('src', colors[firstKey].image);
+        currentColorImage = colors[firstKey].image;
+        setBaseImageForView(currentView);
       }
 
       renderQuantities(firstKey);
@@ -107,7 +126,8 @@
 
       const color = data.colors && data.colors[colorKey];
       if (color && color.image) {
-        $baseImage.attr('src', color.image);
+        currentColorImage = color.image;
+        setBaseImageForView(currentView);
       }
       $baseImage.removeClass('is-flipped');
       $altViewButtons.removeClass('is-active');
@@ -197,17 +217,9 @@
       const view = $(this).data('view');
       $altViewButtons.removeClass('is-active');
       $(this).addClass('is-active');
+      currentView = view;
 
-      const viewImage = altViewImages[view];
-      if (viewImage) {
-        $baseImage.attr('src', viewImage);
-      }
-
-      if (view === 'right' && altViewImages.right) {
-        $baseImage.addClass('is-flipped');
-      } else {
-        $baseImage.removeClass('is-flipped');
-      }
+      setBaseImageForView(view);
     });
 
     renderColors();
