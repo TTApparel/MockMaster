@@ -92,6 +92,10 @@
   object-fit: contain;
 }
 
+.mockmaster-designer__base-image {
+  z-index: 1;
+}
+
 .mockmaster-designer__base-image.is-flipped {
   transform: scaleX(-1);
 }
@@ -101,6 +105,18 @@
   opacity: 0;
   transition: opacity 0.2s ease;
   cursor: move;
+  z-index: 4;
+}
+
+.mockmaster-designer__image-stage.is-design-preview .mockmaster-designer__design-image {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(128, 128, 128, 0.5);
 }
 
 .mockmaster-designer__image-stage.is-design-preview .mockmaster-designer__design-image {
@@ -131,6 +147,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
+  z-index: 2;
 }
 
 .mockmaster-designer__stage-overlay {
