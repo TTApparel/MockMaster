@@ -43,7 +43,7 @@
           const styleAttr = swatchImage ? `style="background-image: url('${swatchImage}');"` : '';
           const imageClass = swatchImage ? 'has-image' : '';
           return `
-            <button type="button" class="mockmaster-designer__swatch ${activeClass} ${imageClass}" data-color="${key}" ${styleAttr} aria-label="${label}"></button>
+            <button type="button" class="mockmaster-designer__swatch ${activeClass} ${imageClass}" data-color="${key}" data-label="${label}" ${styleAttr} aria-label="${label}"></button>
           `;
         })
         .join('');

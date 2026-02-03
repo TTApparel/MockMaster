@@ -177,6 +177,47 @@
   background-position: center;
 }
 
+.mockmaster-designer__swatch::after {
+  content: attr(data-label);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  background: #111;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.2;
+  padding: 3px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 2;
+}
+
+.mockmaster-designer__swatch::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 1px);
+  transform: translateX(-50%);
+  border-width: 5px 5px 0 5px;
+  border-style: solid;
+  border-color: #111 transparent transparent transparent;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 2;
+}
+
+.mockmaster-designer__swatch:hover::after,
+.mockmaster-designer__swatch:hover::before,
+.mockmaster-designer__swatch:focus-visible::after,
+.mockmaster-designer__swatch:focus-visible::before {
+  opacity: 1;
+}
+
 .mockmaster-designer__swatch.is-active {
   background: var(--mm-swatch-active-bg, #1a1a1a);
   color: var(--mm-swatch-active-text, #fff);
