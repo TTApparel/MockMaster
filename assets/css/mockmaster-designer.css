@@ -372,6 +372,12 @@
   color: var(--mm-category-active-text, #fff);
 }
 
+.mockmaster-designer__placement-options button.is-disabled,
+.mockmaster-designer__placement-options button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .mockmaster-designer__placement-slider {
   display: flex;
   flex-direction: column;

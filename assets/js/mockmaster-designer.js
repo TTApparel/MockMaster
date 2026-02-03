@@ -300,6 +300,20 @@
       }
     }
 
+    function updatePlacementAvailability() {
+      const usedPlacements = savedDesigns
+        .filter((entry) => entry.name !== currentDesignName)
+        .map((entry) => entry.placement);
+
+      $placementButtons.each(function () {
+        const $button = $(this);
+        const placement = $button.data('placement');
+        const isUsed = usedPlacements.includes(placement);
+        $button.prop('disabled', isUsed || isPlacementLocked);
+        $button.toggleClass('is-disabled', isUsed);
+      });
+    }
+
     function renderSavedDesigns() {
       if (!$uploadList.length) {
         return;
@@ -330,6 +344,7 @@
 
       $uploadList.html(listItems);
       updateSelectQuantitiesButton();
+      updatePlacementAvailability();
     }
 
     function updateSelectQuantitiesButton() {
@@ -592,6 +607,7 @@
       updatePlacementStatus();
       setPlacementLockState();
       $placementButtons.removeClass('is-active');
+      updatePlacementAvailability();
       $placementDimensions.text('--');
       if ($uploadList.length) {
         renderSavedDesigns();
@@ -723,6 +739,7 @@
       renderAltViewOverlays();
       switchPanel('design');
       updateSelectQuantitiesButton();
+      updatePlacementAvailability();
     });
 
     $root.on('click', '[data-role="select-quantities"]', function () {
@@ -747,6 +764,7 @@
       }
       updatePlacementStatus();
       setPlacementLockState();
+      updatePlacementAvailability();
 
       $placementButtons.removeClass('is-active');
       $placementButtons.filter(`[data-placement="${entry.placement}"]`).addClass('is-active');
@@ -789,6 +807,7 @@
 
       renderSavedDesigns();
       renderAltViewOverlays();
+      updatePlacementAvailability();
     });
 
     $root.on('click', '.mockmaster-designer__alt-view', function () {
