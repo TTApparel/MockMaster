@@ -591,6 +591,7 @@
 
       setAltViewButtonImages();
       renderQuantities(colorKey);
+      switchPanel('design');
     });
 
     $uploadInput.on('change', function (event) {
