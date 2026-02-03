@@ -175,7 +175,8 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, 53px);
   grid-auto-rows: 39px;
-  gap: 8px;
+  justify-content: space-evenly;
+  gap: 4px;
 }
 
 .mockmaster-designer__swatch {
