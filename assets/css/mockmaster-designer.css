@@ -331,6 +331,10 @@
   color: #555;
 }
 
+.mockmaster-designer__color-counter-advanced {
+  display: none;
+}
+
 .mockmaster-designer__color-counter-controls input,
 .mockmaster-designer__color-counter-controls select {
   width: 100%;
@@ -376,7 +380,7 @@
   max-width: 180px;
   border-radius: 8px;
   border: 1px solid #ddd;
-  background: #fafafa;
+  background: transparent;
 }
 
 .mockmaster-designer__color-counter-empty {
