@@ -290,6 +290,7 @@
 
     function setDesignImageVisibility(isVisible) {
       $designImage.toggleClass('is-hidden', !isVisible);
+      renderStageOverlays();
     }
 
     function ensureStageOverlayContainer() {
@@ -311,11 +312,13 @@
         return;
       }
 
+      const shouldHideCurrentDesign = $designImage.attr('src') && !$designImage.hasClass('is-hidden');
+
       savedDesigns.forEach((entry) => {
         if (entry.view !== currentView || !entry.src) {
           return;
         }
-        if (entry.name === currentDesignName && $designImage.attr('src')) {
+        if (entry.name === currentDesignName && shouldHideCurrentDesign) {
           return;
         }
 
