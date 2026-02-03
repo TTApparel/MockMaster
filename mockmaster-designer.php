@@ -124,8 +124,8 @@ class MockMasterDesigner {
                             </div>
                             <div class="mockmaster-designer__color-counter-controls">
                                 <label>
-                                    <span>K</span>
-                                    <input type="number" min="2" max="16" step="1" value="8" data-role="color-k" />
+                                    <span>COLOR COUNT</span>
+                                    <input type="number" min="1" max="8" step="1" value="8" data-role="color-count-control" />
                                 </label>
                                 <label>
                                     <span>Min %</span>
@@ -142,7 +142,7 @@ class MockMasterDesigner {
                                 <label>
                                     <span>Composite</span>
                                     <select data-role="color-composite">
-                                        <option value="1" selected>On white</option>
+                                        <option value="1" selected>On background</option>
                                         <option value="0">Keep RGB</option>
                                     </select>
                                 </label>
@@ -394,8 +394,8 @@ class MockMasterDesigner {
                                 </div>
                                 <div class="mockmaster-designer__color-counter-controls">
                                     <label>
-                                        <span>K</span>
-                                        <input type="number" min="2" max="16" step="1" value="8" data-role="color-k" />
+                                    <span>COLOR COUNT</span>
+                                    <input type="number" min="1" max="8" step="1" value="8" data-role="color-count-control" />
                                     </label>
                                     <label>
                                         <span>Min %</span>
@@ -412,7 +412,7 @@ class MockMasterDesigner {
                                     <label>
                                         <span>Composite</span>
                                         <select data-role="color-composite">
-                                            <option value="1" selected>On white</option>
+                                            <option value="1" selected>On background</option>
                                             <option value="0">Keep RGB</option>
                                         </select>
                                     </label>
@@ -556,15 +556,17 @@ class MockMasterDesigner {
 
     private function get_color_counter_defaults() {
         return array(
-            'k' => 8,
+            'color_count' => 8,
             'min_pct' => 0.5,
             'min_pixels' => 0,
             'alpha_threshold' => 20,
             'background' => '#ffffff',
             'composite' => true,
-            'max_dimension' => 800,
+            'max_working_dim' => 2000,
+            'max_preview_dim' => 800,
             'max_samples' => 200000,
             'seed' => 1337,
+            'merge_distance' => 10,
         );
     }
 
@@ -703,8 +705,15 @@ class MockMasterDesigner {
             return array();
         }
 
+        $color_count = isset($settings['color_count']) ? absint($settings['color_count']) : 0;
+        if (!$color_count && isset($settings['k'])) {
+            $color_count = absint($settings['k']);
+        }
+        $color_count = max(1, min(8, $color_count ?: 8));
+
         return array(
-            'k' => isset($settings['k']) ? max(2, min(16, absint($settings['k']))) : 8,
+            'color_count' => $color_count,
+            'k' => $color_count,
             'min_pct' => isset($settings['min_pct']) ? max(0, min(100, (float) $settings['min_pct'])) : 0.5,
             'min_pixels' => isset($settings['min_pixels']) ? max(0, absint($settings['min_pixels'])) : 0,
             'alpha_threshold' => isset($settings['alpha_threshold']) ? max(0, min(255, absint($settings['alpha_threshold']))) : 20,
