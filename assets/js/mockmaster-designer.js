@@ -49,6 +49,178 @@
     back: 'Back',
   };
 
+  function createSeededRandom(seed) {
+    let value = seed >>> 0;
+    return function () {
+      value ^= value << 13;
+      value ^= value >>> 17;
+      value ^= value << 5;
+      return (value >>> 0) / 4294967296;
+    };
+  }
+
+  function parseHexColor(hex) {
+    const cleaned = String(hex || '').replace('#', '');
+    if (cleaned.length !== 6) {
+      return [255, 255, 255];
+    }
+    return [
+      parseInt(cleaned.slice(0, 2), 16),
+      parseInt(cleaned.slice(2, 4), 16),
+      parseInt(cleaned.slice(4, 6), 16),
+    ];
+  }
+
+  function rgbToHex(rgb) {
+    return (
+      '#' +
+      rgb
+        .map((value) => {
+          const hex = Math.round(value).toString(16).padStart(2, '0');
+          return hex.toUpperCase();
+        })
+        .join('')
+    );
+  }
+
+  function createAnalysisCanvas(image, maxDimension) {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (!context) {
+      return null;
+    }
+
+    const width = image.naturalWidth || image.width;
+    const height = image.naturalHeight || image.height;
+    const max = Math.max(width, height);
+    const scale = max > maxDimension ? maxDimension / max : 1;
+
+    canvas.width = Math.max(1, Math.round(width * scale));
+    canvas.height = Math.max(1, Math.round(height * scale));
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    return canvas;
+  }
+
+  function samplePixels(imageData, options) {
+    const { alphaThreshold, compositeOnBackground, backgroundRgb, maxSamples } = options;
+    const pixels = [];
+    const data = imageData.data;
+    const totalPixels = data.length / 4;
+    const step = totalPixels > maxSamples ? Math.ceil(totalPixels / maxSamples) : 1;
+
+    for (let i = 0; i < data.length; i += 4 * step) {
+      const alpha = data[i + 3];
+      if (alpha === 0 || alpha < alphaThreshold) {
+        continue;
+      }
+
+      let r = data[i];
+      let g = data[i + 1];
+      let b = data[i + 2];
+      if (alpha < 255 && compositeOnBackground) {
+        const ratio = alpha / 255;
+        r = Math.round(r * ratio + backgroundRgb[0] * (1 - ratio));
+        g = Math.round(g * ratio + backgroundRgb[1] * (1 - ratio));
+        b = Math.round(b * ratio + backgroundRgb[2] * (1 - ratio));
+      }
+
+      pixels.push([r, g, b]);
+    }
+
+    return pixels;
+  }
+
+  function kMeansQuantize(pixels, k, seed) {
+    if (!pixels.length) {
+      return { centroids: [], assignments: [] };
+    }
+
+    const random = createSeededRandom(seed);
+    const centroids = [];
+    const assignments = new Array(pixels.length);
+
+    for (let i = 0; i < k; i += 1) {
+      const index = Math.floor(random() * pixels.length);
+      centroids.push(pixels[index].slice());
+    }
+
+    const maxIterations = 10;
+    for (let iteration = 0; iteration < maxIterations; iteration += 1) {
+      const sums = Array.from({ length: k }, () => [0, 0, 0, 0]);
+
+      for (let i = 0; i < pixels.length; i += 1) {
+        const pixel = pixels[i];
+        let nearest = 0;
+        let nearestDistance = Number.POSITIVE_INFINITY;
+
+        for (let c = 0; c < centroids.length; c += 1) {
+          const centroid = centroids[c];
+          const dr = pixel[0] - centroid[0];
+          const dg = pixel[1] - centroid[1];
+          const db = pixel[2] - centroid[2];
+          const distance = dr * dr + dg * dg + db * db;
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearest = c;
+          }
+        }
+
+        assignments[i] = nearest;
+        sums[nearest][0] += pixel[0];
+        sums[nearest][1] += pixel[1];
+        sums[nearest][2] += pixel[2];
+        sums[nearest][3] += 1;
+      }
+
+      for (let c = 0; c < centroids.length; c += 1) {
+        if (sums[c][3] === 0) {
+          const replacementIndex = Math.floor(random() * pixels.length);
+          centroids[c] = pixels[replacementIndex].slice();
+          continue;
+        }
+        centroids[c] = [
+          sums[c][0] / sums[c][3],
+          sums[c][1] / sums[c][3],
+          sums[c][2] / sums[c][3],
+        ];
+      }
+    }
+
+    return { centroids, assignments };
+  }
+
+  function buildPalette(centroids, assignments, totalPixels, minPct, minPixels) {
+    if (!centroids.length) {
+      return [];
+    }
+
+    const counts = new Array(centroids.length).fill(0);
+    assignments.forEach((cluster) => {
+      counts[cluster] += 1;
+    });
+
+    const palette = centroids
+      .map((centroid, index) => {
+        const pixelCount = counts[index];
+        const percent = totalPixels ? (pixelCount / totalPixels) * 100 : 0;
+        return {
+          rgb: centroid.map((value) => Math.round(value)),
+          hex: rgbToHex(centroid),
+          pixel_count: pixelCount,
+          percent,
+        };
+      })
+      .filter((entry) => {
+        if (entry.pixel_count < minPixels) {
+          return false;
+        }
+        return entry.percent >= minPct;
+      })
+      .sort((a, b) => b.percent - a.percent);
+
+    return palette;
+  }
+
   function initDesigner($root) {
     const $categories = $root.find('.mockmaster-designer__category');
     const $panels = $root.find('.mockmaster-designer__panel');
@@ -58,6 +230,18 @@
     const $designImage = $root.find('.mockmaster-designer__design-image');
     const $uploadInput = $root.find('.mockmaster-designer__upload-input');
     const $uploadList = $root.find('[data-role="design-uploads"]');
+    const $colorCounter = $root.find('[data-role="color-counter"]');
+    const $colorCount = $root.find('[data-role="color-count"]');
+    const $colorPalette = $root.find('[data-role="color-palette"]');
+    const $colorPreview = $root.find('[data-role="color-preview"]');
+    const $colorCountInput = $root.find('[data-role="color-count-input"]');
+    const $colorPaletteInput = $root.find('[data-role="color-palette-input"]');
+    const $colorSettingsInput = $root.find('[data-role="color-settings-input"]');
+    const $colorK = $root.find('[data-role="color-k"]');
+    const $colorMinPct = $root.find('[data-role="color-min-pct"]');
+    const $colorAlpha = $root.find('[data-role="color-alpha-threshold"]');
+    const $colorBackground = $root.find('[data-role="color-background"]');
+    const $colorComposite = $root.find('[data-role="color-composite"]');
     let $selectQuantities = $root.find('[data-role="select-quantities"]');
     const $altViewButtons = $root.find('.mockmaster-designer__alt-view');
     const $placementButtons = $root.find('.mockmaster-designer__placement-options button');
@@ -83,6 +267,8 @@
       back: data.colorBackImage || '',
       right: sideImage,
     };
+    const colorDefaults = data.colorCounterDefaults || {};
+    let lastColorCounterImage = null;
 
     function deriveViewUrls(frontUrl) {
       if (!frontUrl) {
@@ -624,6 +810,213 @@
       $quantityOptions.html(rows);
     }
 
+    updateColorCounterControls();
+
+    if ($colorCounter.length) {
+      $colorCounter.on('input change', 'input, select', function () {
+        if (lastColorCounterImage) {
+          analyzeImageColors(lastColorCounterImage);
+        }
+      });
+    }
+
+    function getColorCounterSettings() {
+      const kValue = parseInt($colorK.val(), 10);
+      const minPctValue = parseFloat($colorMinPct.val());
+      const alphaValue = parseInt($colorAlpha.val(), 10);
+      const compositeValue = String($colorComposite.val()) === '1';
+
+      return {
+        k: Number.isNaN(kValue) ? colorDefaults.k || 8 : kValue,
+        min_pct: Number.isNaN(minPctValue) ? colorDefaults.min_pct || 0.5 : minPctValue,
+        min_pixels: colorDefaults.min_pixels || 0,
+        alpha_threshold: Number.isNaN(alphaValue) ? colorDefaults.alpha_threshold || 20 : alphaValue,
+        background: $colorBackground.val() || colorDefaults.background || '#ffffff',
+        composite: compositeValue,
+        max_dimension: colorDefaults.max_dimension || 800,
+        max_samples: colorDefaults.max_samples || 200000,
+        seed: colorDefaults.seed || 1337,
+      };
+    }
+
+    function updateColorCounterControls() {
+      if (!$colorCounter.length) {
+        return;
+      }
+
+      if (colorDefaults.k) {
+        $colorK.val(colorDefaults.k);
+      }
+      if (typeof colorDefaults.min_pct !== 'undefined') {
+        $colorMinPct.val(colorDefaults.min_pct);
+      }
+      if (typeof colorDefaults.alpha_threshold !== 'undefined') {
+        $colorAlpha.val(colorDefaults.alpha_threshold);
+      }
+      if (colorDefaults.background) {
+        $colorBackground.val(colorDefaults.background);
+      }
+      if (typeof colorDefaults.composite !== 'undefined') {
+        $colorComposite.val(colorDefaults.composite ? '1' : '0');
+      }
+    }
+
+    function renderPalette(palette) {
+      if (!$colorPalette.length) {
+        return;
+      }
+
+      if (!palette.length) {
+        $colorPalette.html('<span class="mockmaster-designer__color-counter-empty">No colors detected.</span>');
+        return;
+      }
+
+      const items = palette
+        .map((entry) => {
+          const percent = entry.percent.toFixed(2);
+          return `
+            <div class="mockmaster-designer__color-counter-swatch">
+              <span class="mockmaster-designer__color-counter-color" style="background:${entry.hex}"></span>
+              <div class="mockmaster-designer__color-counter-meta">
+                <span>${entry.hex}</span>
+                <span>${percent}%</span>
+              </div>
+            </div>
+          `;
+        })
+        .join('');
+
+      $colorPalette.html(items);
+    }
+
+    function renderQuantizedPreview(image, palette) {
+      if (!$colorPreview.length) {
+        return;
+      }
+
+      const canvas = $colorPreview.get(0);
+      if (!canvas) {
+        return;
+      }
+
+      const previewContext = canvas.getContext('2d');
+      if (!previewContext) {
+        return;
+      }
+
+      if (!palette.length) {
+        previewContext.clearRect(0, 0, canvas.width, canvas.height);
+        return;
+      }
+
+      const previewCanvas = createAnalysisCanvas(image, 160);
+      if (!previewCanvas) {
+        return;
+      }
+
+      canvas.width = previewCanvas.width;
+      canvas.height = previewCanvas.height;
+      const previewData = previewCanvas.getContext('2d').getImageData(0, 0, previewCanvas.width, previewCanvas.height);
+      const data = previewData.data;
+      const centroids = palette.map((entry) => entry.rgb);
+
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        let nearest = 0;
+        let nearestDistance = Number.POSITIVE_INFINITY;
+
+        for (let c = 0; c < centroids.length; c += 1) {
+          const centroid = centroids[c];
+          const dr = r - centroid[0];
+          const dg = g - centroid[1];
+          const db = b - centroid[2];
+          const distance = dr * dr + dg * dg + db * db;
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearest = c;
+          }
+        }
+
+        data[i] = centroids[nearest][0];
+        data[i + 1] = centroids[nearest][1];
+        data[i + 2] = centroids[nearest][2];
+        data[i + 3] = 255;
+      }
+
+      previewContext.putImageData(previewData, 0, 0);
+    }
+
+    function updateColorCounterOutputs(result, settings) {
+      if (!$colorCounter.length) {
+        return;
+      }
+
+      const palette = result.palette || [];
+      const estimated = result.final_color_count || 0;
+
+      $colorCount.text(typeof estimated === 'number' ? String(estimated) : '--');
+      renderPalette(palette);
+
+      $colorCountInput.val(estimated);
+      $colorPaletteInput.val(JSON.stringify(palette));
+      $colorSettingsInput.val(JSON.stringify(settings));
+
+      if (data.ajaxUrl && data.colorCounterNonce) {
+        $.post(data.ajaxUrl, {
+          action: 'mockmaster_designer_store_color_count',
+          nonce: data.colorCounterNonce,
+          estimated_colors: estimated,
+          palette: JSON.stringify(palette),
+          settings: JSON.stringify(settings),
+        });
+      }
+    }
+
+    function analyzeImageColors(image) {
+      const settings = getColorCounterSettings();
+      const canvas = createAnalysisCanvas(image, settings.max_dimension);
+      if (!canvas) {
+        return;
+      }
+      const context = canvas.getContext('2d');
+      if (!context) {
+        return;
+      }
+
+      // Quantization + noise filtering approximates screen print separations by grouping similar colors and removing tiny blends.
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+      const pixels = samplePixels(imageData, {
+        alphaThreshold: settings.alpha_threshold,
+        compositeOnBackground: settings.composite,
+        backgroundRgb: parseHexColor(settings.background),
+        maxSamples: settings.max_samples,
+      });
+
+      if (!pixels.length) {
+        updateColorCounterOutputs({ final_color_count: 0, palette: [] }, settings);
+        return;
+      }
+
+      const { centroids, assignments } = kMeansQuantize(pixels, settings.k, settings.seed);
+      const palette = buildPalette(
+        centroids,
+        assignments,
+        pixels.length,
+        settings.min_pct,
+        settings.min_pixels
+      );
+
+      const result = {
+        final_color_count: palette.length,
+        palette,
+      };
+
+      updateColorCounterOutputs(result, settings);
+      renderQuantizedPreview(image, palette);
+    }
+
     $root.on('click', '.mockmaster-designer__category', function () {
       const category = $(this).data('category');
       $categories.removeClass('is-active');
@@ -677,6 +1070,15 @@
         $designImage.addClass('is-visible');
         setDesignImageVisibility(true);
         switchPanel('placement');
+
+        if ($colorCounter.length) {
+          const previewImage = new Image();
+          previewImage.onload = function () {
+            lastColorCounterImage = previewImage;
+            analyzeImageColors(previewImage);
+          };
+          previewImage.src = loadEvent.target.result;
+        }
       };
       reader.readAsDataURL(file);
     });
