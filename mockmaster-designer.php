@@ -130,7 +130,6 @@ class MockMasterDesigner {
                             </div>
                             <div class="mockmaster-designer__color-counter-results">
                                 <div class="mockmaster-designer__color-counter-palette" data-role="color-palette"></div>
-                                <canvas class="mockmaster-designer__color-counter-preview" data-role="color-preview" width="160" height="160"></canvas>
                             </div>
                             <input type="hidden" name="mockmaster_estimated_colors" data-role="color-count-input" />
                             <input type="hidden" name="mockmaster_palette" data-role="color-palette-input" />
@@ -381,7 +380,6 @@ class MockMasterDesigner {
                                 </div>
                                 <div class="mockmaster-designer__color-counter-results">
                                     <div class="mockmaster-designer__color-counter-palette" data-role="color-palette"></div>
-                                    <canvas class="mockmaster-designer__color-counter-preview" data-role="color-preview" width="160" height="160"></canvas>
                                 </div>
                                 <input type="hidden" name="mockmaster_estimated_colors" data-role="color-count-input" />
                                 <input type="hidden" name="mockmaster_palette" data-role="color-palette-input" />
