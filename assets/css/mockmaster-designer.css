@@ -1,7 +1,7 @@
 .mockmaster-designer {
   color: var(--mm-text-color, #1a1a1a);
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
   gap: 24px;
   align-items: start;
   font-family: "Helvetica Neue", Arial, sans-serif;
@@ -14,6 +14,7 @@
 .mockmaster-designer__right {
   position: relative;
   min-height: 520px;
+  min-width: 0;
 }
 
 .mockmaster-designer__arc {
