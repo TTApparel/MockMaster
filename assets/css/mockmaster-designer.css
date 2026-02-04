@@ -3,7 +3,7 @@
   display: grid;
   grid-template-columns: 1fr 2fr 1fr;
   gap: 24px;
-  align-items: center;
+  align-items: start;
   font-family: "Helvetica Neue", Arial, sans-serif;
   max-width: 1100px;
   margin: 0 auto;
