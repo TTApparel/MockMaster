@@ -600,7 +600,7 @@
 .mockmaster-designer__quantity-row {
   display: grid;
   grid-template-columns: minmax(0, 30px) minmax(0, 70px) minmax(0, 80px) minmax(0, 70px);
-  gap: 8px;
+  gap: 4px;
   align-items: center;
   font-size: 13px;
 }
