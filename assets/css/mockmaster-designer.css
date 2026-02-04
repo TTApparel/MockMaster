@@ -584,10 +584,14 @@
 
 .mockmaster-designer__quantity-row {
   display: grid;
-  grid-template-columns: 1fr 70px 70px;
+  grid-template-columns: 1fr 90px 80px 1fr;
   gap: 8px;
   align-items: center;
   font-size: 13px;
+}
+
+.mockmaster-designer__quantity-cost {
+  white-space: nowrap;
 }
 
 .mockmaster-designer__quantity-row input {

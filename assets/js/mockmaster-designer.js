@@ -1105,7 +1105,7 @@
             : 0;
         const baseCost = (50 + 30 * colorCount) / totalQuantity;
         const variableCost = 0.1 * colorCount;
-        const totalCost = baseCost + variableCost + 1.25;
+        const totalCost = (baseCost + variableCost + 1.25) / 0.6;
         return sum + totalCost;
       }, 0);
     }
