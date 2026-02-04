@@ -744,7 +744,6 @@
                 <span class="mockmaster-designer__upload-meta">${entry.placementLabel} · ${entry.dimensions} · ${formatPositionText(entry.position)}</span>
               </div>
               <div class="mockmaster-designer__upload-actions">
-                <button type="button" class="mockmaster-designer__upload-edit" data-design="${entry.name}">Edit</button>
                 <button type="button" class="mockmaster-designer__upload-remove" data-design="${entry.name}">Remove</button>
               </div>
             </li>
@@ -1500,45 +1499,6 @@
 
     $root.on('click', '[data-role="place-design"]', function () {
       switchPanel('placement');
-    });
-
-    $root.on('click', '.mockmaster-designer__upload-edit', function () {
-      const designName = $(this).data('design');
-      const entry = savedDesigns.find((saved) => saved.name === designName);
-      if (!entry) {
-        return;
-      }
-
-      currentDesignName = entry.name;
-      currentPlacement = entry.placement;
-      currentPlacementSize = entry.size;
-      currentDesignPosition = entry.position;
-      isPlacementLocked = false;
-      if (entry.src) {
-        $designImage.attr('src', entry.src);
-        $designImage.addClass('is-visible');
-      }
-      setDesignImageVisibility(true);
-      updatePlacementStatus();
-      setPlacementLockState();
-      updatePlacementAvailability();
-      isColorCounterVisible = true;
-      updateColorCounterVisibility();
-
-      $placementButtons.removeClass('is-active');
-      $placementButtons.filter(`[data-placement="${entry.placement}"]`).addClass('is-active');
-      updatePlacementSlider(entry.placement);
-      applyPlacement(entry.placement);
-      applyDesignPosition(entry.position);
-      updatePlacementDimensions();
-      setViewForPlacement(entry.placement);
-      renderAltViewOverlays();
-      renderStageOverlays();
-
-      $categories.removeClass('is-active');
-      $categories.filter('[data-category="placement"]').addClass('is-active');
-      $panels.removeClass('is-active');
-      $panels.filter('[data-panel="placement"]').addClass('is-active');
     });
 
     $root.on('click', '.mockmaster-designer__upload-remove', function () {
