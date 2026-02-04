@@ -1130,7 +1130,8 @@
         }
         const garmentCost = priceValue / 1.2;
         const estimatedCost = garmentCost + totalPrintCost;
-        $cost.text(`$${estimatedCost.toFixed(2)}`);
+        const roundedCost = Math.floor(estimatedCost * 4) / 4;
+        $cost.text(`$${roundedCost.toFixed(2)}`);
       });
     }
 
