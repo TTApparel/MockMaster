@@ -563,7 +563,7 @@
         width = size * aspect;
       }
 
-      return `Size: ${width.toFixed(1)}" W x ${height.toFixed(1)}" H`;
+      return `Approx. size: ${width.toFixed(1)}" W x ${height.toFixed(1)}" H`;
     }
 
     function applyPlacement(placement) {
@@ -743,7 +743,7 @@
             <li class="mockmaster-designer__upload-item">
               <div>
                 <span class="mockmaster-designer__upload-name">${entry.name}</span>
-                <span class="mockmaster-designer__upload-meta">${entry.placementLabel}<br>${entry.dimensions}<br>${formatPositionText(entry.position)}${colorCountText ? `<br>${colorCountText}` : ''}</span>
+                <span class="mockmaster-designer__upload-meta">${entry.placementLabel} · ${entry.dimensions} · ${formatPositionText(entry.position)}${colorCountText}</span>
               </div>
               <div class="mockmaster-designer__upload-actions">
                 <button type="button" class="mockmaster-designer__upload-remove" data-design="${entry.name}">Remove</button>
@@ -779,7 +779,7 @@
         return;
       }
       const hasDesign = Boolean($designImage.attr('src'));
-      $placeDesign.toggleClass('is-hidden', !(hasDesign && isColorCounterVisible));
+      $placeDesign.toggleClass('is-hidden', !hasDesign);
     }
 
     function updateColorCounterVisibility() {
