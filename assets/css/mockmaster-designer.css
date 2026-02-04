@@ -1,7 +1,7 @@
 .mockmaster-designer {
   color: var(--mm-text-color, #1a1a1a);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1.5fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1.25fr);
   gap: 24px;
   align-items: start;
   font-family: "Helvetica Neue", Arial, sans-serif;
