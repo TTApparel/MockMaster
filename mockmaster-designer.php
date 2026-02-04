@@ -375,9 +375,9 @@ class MockMasterDesigner {
                                 </div>
                                 <div class="mockmaster-designer__color-counter-controls">
                                     <label>
-                                        <span>COLOR COUNT</span>
-                                        <input type="number" min="1" max="8" step="1" value="8" data-role="color-count-control" />
+                                        <span>MAXIMUM COLOR COUNT</span>
                                     </label>
+                                    <input type="number" min="1" max="8" step="1" value="8" data-role="color-count-control" />
                                 </div>
                             <div class="mockmaster-designer__color-counter-results">
                                 <div class="mockmaster-designer__color-counter-palette" data-role="color-palette"></div>
