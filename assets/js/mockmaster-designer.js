@@ -1056,12 +1056,15 @@
           const sizeLabel = String(sizeData.label || size).toUpperCase();
           const price = typeof sizeData.price === 'number' ? sizeData.price : parseFloat(sizeData.price) || 0;
           return `
-            <div class="mockmaster-designer__quantity-row" data-price="${price}">
+            <div class="mockmaster-designer__quantity-row" data-price="${price}" data-stock="${sizeData.stock}">
               <span>${sizeLabel}</span>
-              <span>In stock: ${sizeData.stock}</span>
-              <input type="number" min="0" placeholder="0" />
+              <span class="mockmaster-designer__quantity-stock">
+                <span class="mockmaster-designer__quantity-stock-label">In stock:</span>
+                <span class="mockmaster-designer__quantity-stock-value">${sizeData.stock}</span>
+              </span>
+              <input type="number" min="0" max="${sizeData.stock}" placeholder="0" />
               <span class="mockmaster-designer__quantity-cost">
-                <span class="mockmaster-designer__quantity-cost-label">Estimated cost:</span>
+                <span class="mockmaster-designer__quantity-cost-label">Unit cost:</span>
                 <span class="mockmaster-designer__quantity-cost-value" data-role="quantity-cost">--</span>
               </span>
             </div>
@@ -1616,6 +1619,19 @@
     });
 
     $root.on('input change', '[data-role="quantity-options"] input[type="number"]', function () {
+      const $input = $(this);
+      const maxValue = parseInt($input.attr('max'), 10);
+      let value = parseInt($input.val(), 10);
+
+      if (Number.isNaN(value)) {
+        value = 0;
+      }
+
+      if (!Number.isNaN(maxValue) && value > maxValue) {
+        value = maxValue;
+        $input.val(value);
+      }
+
       const total = updateQuantityTotal();
       updateQuantityCosts(total);
     });
