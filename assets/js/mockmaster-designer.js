@@ -836,6 +836,51 @@
       renderStageOverlays();
     }
 
+    function isPlacementEnabled(placement) {
+      const $button = $placementButtons.filter(`[data-placement="${placement}"]`);
+      if (!$button.length) {
+        return false;
+      }
+      return !$button.prop('disabled');
+    }
+
+    function selectPlacement(placement) {
+      const $button = $placementButtons.filter(`[data-placement="${placement}"]`);
+      if (!$button.length || $button.prop('disabled')) {
+        return false;
+      }
+      $placementButtons.removeClass('is-active');
+      $button.addClass('is-active');
+
+      currentPlacement = placement;
+      currentPlacementSize = null;
+      currentDesignPosition = null;
+      updatePlacementSlider(placement);
+      applyPlacement(placement);
+      updatePlacementDimensions();
+      setViewForPlacement(placement);
+      setDesignImageVisibility(true);
+      return true;
+    }
+
+    function getPlacementForView(view) {
+      if (view === 'left') {
+        return isPlacementEnabled('left-sleeve') ? 'left-sleeve' : null;
+      }
+      if (view === 'right') {
+        return isPlacementEnabled('right-sleeve') ? 'right-sleeve' : null;
+      }
+      if (view === 'back') {
+        return isPlacementEnabled('back') ? 'back' : null;
+      }
+      if (view === 'front') {
+        const frontPlacements = ['left-chest', 'right-chest', 'full-chest'];
+        const available = frontPlacements.find((placement) => isPlacementEnabled(placement));
+        return available || null;
+      }
+      return null;
+    }
+
     function setBaseImageForView(view) {
       const frontUrl = currentColorImage || data.defaultImage || '';
       const viewUrls = deriveViewUrls(frontUrl);
@@ -1423,16 +1468,7 @@
 
     $root.on('click', '.mockmaster-designer__placement-options button', function () {
       const placement = $(this).data('placement');
-      $placementButtons.removeClass('is-active');
-      $(this).addClass('is-active');
-
-      currentPlacement = placement;
-      currentPlacementSize = null;
-      currentDesignPosition = null;
-      updatePlacementSlider(placement);
-      applyPlacement(placement);
-      updatePlacementDimensions();
-      setViewForPlacement(placement);
+      selectPlacement(placement);
     });
 
     $placementSize.on('input change', function () {
@@ -1543,6 +1579,16 @@
 
     $root.on('click', '.mockmaster-designer__alt-view', function () {
       const view = $(this).data('view');
+      if (isPlacementPanelActive()) {
+        const placement = getPlacementForView(view);
+        if (!placement) {
+          return;
+        }
+        if (selectPlacement(placement)) {
+          return;
+        }
+        return;
+      }
       $altViewButtons.removeClass('is-active');
       $(this).addClass('is-active');
       currentView = view;
