@@ -1061,7 +1061,7 @@
               <span>In stock: ${sizeData.stock}</span>
               <input type="number" min="0" placeholder="0" />
               <span class="mockmaster-designer__quantity-cost">
-                <span class="mockmaster-designer__quantity-cost-label">Estimated cost:</span>
+                <span class="mockmaster-designer__quantity-cost-label">Unit cost:</span>
                 <span class="mockmaster-designer__quantity-cost-value" data-role="quantity-cost">--</span>
               </span>
             </div>
