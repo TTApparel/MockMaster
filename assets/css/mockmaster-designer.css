@@ -17,6 +17,10 @@
   min-width: 0;
 }
 
+.mockmaster-designer__right {
+  overflow: hidden;
+}
+
 .mockmaster-designer__arc {
   position: relative;
   height: 100%;
@@ -206,6 +210,7 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   position: relative;
   z-index: 1;
+  overflow: hidden;
 }
 
 .mockmaster-designer__panel.is-active {
@@ -594,10 +599,14 @@
 
 .mockmaster-designer__quantity-row {
   display: grid;
-  grid-template-columns: 1fr 90px 80px 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 90px) minmax(0, 80px) minmax(0, 1fr);
   gap: 8px;
   align-items: center;
   font-size: 13px;
+}
+
+.mockmaster-designer__quantity-row > * {
+  min-width: 0;
 }
 
 .mockmaster-designer__quantity-cost {
