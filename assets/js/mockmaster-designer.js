@@ -421,6 +421,7 @@
     const $placementSize = $root.find('[data-role="placement-size"]');
     const $placementDimensions = $root.find('[data-role="placement-dimensions"]');
     const $placementSave = $root.find('[data-role="placement-save"]');
+    const $quantityTotal = $root.find('[data-role="quantity-total"]');
     const $stage = $root.find('.mockmaster-designer__image-stage');
     const savedDesigns = [];
     let isDragging = false;
@@ -1062,6 +1063,21 @@
         .join('');
 
       $quantityOptions.html(rows);
+      updateQuantityTotal();
+    }
+
+    function updateQuantityTotal() {
+      if (!$quantityTotal.length) {
+        return;
+      }
+      let total = 0;
+      $quantityOptions.find('input[type="number"]').each(function () {
+        const value = parseInt($(this).val(), 10);
+        if (!Number.isNaN(value)) {
+          total += value;
+        }
+      });
+      $quantityTotal.text(`Total quantity: ${total}`);
     }
 
     updateColorCounterControls();
@@ -1542,6 +1558,10 @@
 
     $root.on('click', '[data-role="place-design"]', function () {
       switchPanel('placement');
+    });
+
+    $root.on('input change', '[data-role="quantity-options"] input[type="number"]', function () {
+      updateQuantityTotal();
     });
 
     $root.on('click', '.mockmaster-designer__upload-remove', function () {
