@@ -120,6 +120,11 @@ class MockMasterDesigner {
                             <p class="mockmaster-designer__panel-subtitle">Approximate color count</p>
                             <div class="mockmaster-designer__color-counter-summary">
                                 <span>Maximum colors:</span>
+                            </div>
+                            <div class="mockmaster-designer__color-counter-controls">
+                                <label>
+                                    <span>MAXIMUM COLOR COUNT</span>
+                                </label>
                                 <input type="number" min="1" max="8" step="1" value="8" data-role="color-count-control" />
                             </div>
                             <div class="mockmaster-designer__color-counter-results">
