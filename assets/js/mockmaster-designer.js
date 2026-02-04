@@ -947,6 +947,15 @@
       });
     }
 
+    function resetToFrontView() {
+      currentView = 'front';
+      $altViewButtons.removeClass('is-active');
+      $altViewButtons.filter('[data-view="front"]').addClass('is-active');
+      setBaseImageForView('front');
+      setAltViewButtonImages();
+      renderStageOverlays();
+    }
+
     function renderColors() {
       const colors = data.colors || {};
       const entries = Object.keys(colors);
@@ -1477,6 +1486,8 @@
       renderSavedDesigns();
       renderAltViewOverlays();
       switchPanel('design');
+      resetToFrontView();
+      setDesignImageVisibility(false);
       updateSelectQuantitiesButton();
       updateColorCounterVisibility();
       updatePlacementAvailability();
