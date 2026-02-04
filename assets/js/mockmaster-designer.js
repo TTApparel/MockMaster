@@ -1060,7 +1060,10 @@
               <span>${sizeLabel}</span>
               <span>In stock: ${sizeData.stock}</span>
               <input type="number" min="0" placeholder="0" />
-              <span class="mockmaster-designer__quantity-cost" data-role="quantity-cost">Estimated cost: --</span>
+              <span class="mockmaster-designer__quantity-cost">
+                <span class="mockmaster-designer__quantity-cost-label">Estimated cost:</span>
+                <span class="mockmaster-designer__quantity-cost-value" data-role="quantity-cost">--</span>
+              </span>
             </div>
           `;
         })
@@ -1122,12 +1125,12 @@
           return;
         }
         if (!quantityTotal || quantityTotal <= 0 || totalPrintCost === null || Number.isNaN(priceValue)) {
-          $cost.text('Estimated cost: --');
+          $cost.text('--');
           return;
         }
         const garmentCost = priceValue / 1.2;
         const estimatedCost = garmentCost + totalPrintCost;
-        $cost.text(`Estimated cost: $${estimatedCost.toFixed(2)}`);
+        $cost.text(`$${estimatedCost.toFixed(2)}`);
       });
     }
 
