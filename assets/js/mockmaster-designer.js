@@ -733,6 +733,7 @@
       if (!savedDesigns.length) {
         $uploadList.html('<li>No saved placements yet.</li>');
         updateSelectQuantitiesButton();
+        updateQuantityCosts(updateQuantityTotal());
         return;
       }
 
@@ -758,6 +759,7 @@
       updateSelectQuantitiesButton();
       updatePlaceDesignButton();
       updatePlacementAvailability();
+      updateQuantityCosts(updateQuantityTotal());
     }
 
     function updateSelectQuantitiesButton() {
@@ -1052,24 +1054,24 @@
         .map((size) => {
           const sizeData = sizes[size];
           const sizeLabel = String(sizeData.label || size).toUpperCase();
+          const price = typeof sizeData.price === 'number' ? sizeData.price : parseFloat(sizeData.price) || 0;
           return `
-            <div class="mockmaster-designer__quantity-row">
+            <div class="mockmaster-designer__quantity-row" data-price="${price}">
               <span>${sizeLabel}</span>
               <span>In stock: ${sizeData.stock}</span>
               <input type="number" min="0" placeholder="0" />
+              <span class="mockmaster-designer__quantity-cost" data-role="quantity-cost">Estimated cost: --</span>
             </div>
           `;
         })
         .join('');
 
       $quantityOptions.html(rows);
-      updateQuantityTotal();
+      const total = updateQuantityTotal();
+      updateQuantityCosts(total);
     }
 
-    function updateQuantityTotal() {
-      if (!$quantityTotal.length) {
-        return;
-      }
+    function getQuantityTotal() {
       let total = 0;
       $quantityOptions.find('input[type="number"]').each(function () {
         const value = parseInt($(this).val(), 10);
@@ -1077,7 +1079,56 @@
           total += value;
         }
       });
+      return total;
+    }
+
+    function updateQuantityTotal() {
+      if (!$quantityTotal.length) {
+        return 0;
+      }
+      const total = getQuantityTotal();
       $quantityTotal.text(`Total quantity: ${total}`);
+      return total;
+    }
+
+    function getTotalPrintCost(totalQuantity) {
+      if (!totalQuantity || totalQuantity <= 0) {
+        return null;
+      }
+      if (!savedDesigns.length) {
+        return 0;
+      }
+      return savedDesigns.reduce((sum, entry) => {
+        const colorCount =
+          typeof entry.estimatedColors === 'number' && !Number.isNaN(entry.estimatedColors)
+            ? entry.estimatedColors
+            : 0;
+        const baseCost = (50 + 30 * colorCount) / totalQuantity;
+        const variableCost = 0.1 * colorCount;
+        const totalCost = baseCost + variableCost + 1.25;
+        return sum + totalCost;
+      }, 0);
+    }
+
+    function updateQuantityCosts(totalQuantity) {
+      const quantityTotal = typeof totalQuantity === 'number' ? totalQuantity : getQuantityTotal();
+      const totalPrintCost = getTotalPrintCost(quantityTotal);
+
+      $quantityOptions.find('.mockmaster-designer__quantity-row').each(function () {
+        const $row = $(this);
+        const $cost = $row.find('[data-role="quantity-cost"]');
+        const priceValue = parseFloat($row.data('price'));
+        if (!$cost.length) {
+          return;
+        }
+        if (!quantityTotal || quantityTotal <= 0 || totalPrintCost === null || Number.isNaN(priceValue)) {
+          $cost.text('Estimated cost: --');
+          return;
+        }
+        const garmentCost = priceValue / 1.2;
+        const estimatedCost = garmentCost + totalPrintCost;
+        $cost.text(`Estimated cost: $${estimatedCost.toFixed(2)}`);
+      });
     }
 
     updateColorCounterControls();
@@ -1561,7 +1612,8 @@
     });
 
     $root.on('input change', '[data-role="quantity-options"] input[type="number"]', function () {
-      updateQuantityTotal();
+      const total = updateQuantityTotal();
+      updateQuantityCosts(total);
     });
 
     $root.on('click', '.mockmaster-designer__upload-remove', function () {

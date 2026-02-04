@@ -751,6 +751,7 @@ class MockMasterDesigner {
                     $data['variations'][$color]['sizes'][$size] = array(
                         'label' => $attributes['attribute_pa_size'],
                         'stock' => $variation['max_qty'] ?? 0,
+                        'price' => $variation['display_price'] ?? $variation['display_regular_price'] ?? 0,
                     );
                 }
             }
