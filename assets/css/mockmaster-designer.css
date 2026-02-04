@@ -226,6 +226,14 @@
   color: #444;
 }
 
+.mockmaster-designer__quantity-total {
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 1px;
+  margin: 14px 0 8px;
+  color: #444;
+}
+
 .mockmaster-designer__swatches {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -573,10 +581,14 @@
 
 .mockmaster-designer__quantity-row {
   display: grid;
-  grid-template-columns: 1fr 70px 70px;
+  grid-template-columns: 1fr 90px 80px 1fr;
   gap: 8px;
   align-items: center;
   font-size: 13px;
+}
+
+.mockmaster-designer__quantity-cost {
+  white-space: nowrap;
 }
 
 .mockmaster-designer__quantity-row input {
