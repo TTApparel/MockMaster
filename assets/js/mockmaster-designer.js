@@ -414,6 +414,7 @@
     const $colorBackground = $root.find('[data-role="color-background"]');
     const $colorComposite = $root.find('[data-role="color-composite"]');
     let $selectQuantities = $root.find('[data-role="select-quantities"]');
+    const $placeDesign = $root.find('[data-role="place-design"]');
     const $altViewButtons = $root.find('.mockmaster-designer__alt-view');
     const $placementButtons = $root.find('.mockmaster-designer__placement-options button');
     const $placementStatus = $root.find('[data-role="placement-status"]');
@@ -442,6 +443,7 @@
     let lastColorCounterCanvas = null;
     let lastColorCounterFile = null;
     let currentColorPalette = [];
+    let isColorCounterVisible = false;
 
     function deriveViewUrls(frontUrl) {
       if (!frontUrl) {
@@ -742,7 +744,6 @@
                 <span class="mockmaster-designer__upload-meta">${entry.placementLabel} · ${entry.dimensions} · ${formatPositionText(entry.position)}</span>
               </div>
               <div class="mockmaster-designer__upload-actions">
-                <button type="button" class="mockmaster-designer__upload-edit" data-design="${entry.name}">Edit</button>
                 <button type="button" class="mockmaster-designer__upload-remove" data-design="${entry.name}">Remove</button>
               </div>
             </li>
@@ -752,6 +753,7 @@
 
       $uploadList.html(listItems);
       updateSelectQuantitiesButton();
+      updatePlaceDesignButton();
       updatePlacementAvailability();
     }
 
@@ -770,20 +772,43 @@
       $selectQuantities.toggleClass('is-hidden', !hasUploads);
     }
 
+    function updatePlaceDesignButton() {
+      if (!$placeDesign.length) {
+        return;
+      }
+      const hasDesign = Boolean($designImage.attr('src'));
+      $placeDesign.toggleClass('is-hidden', !(hasDesign && isColorCounterVisible));
+    }
+
+    function updateColorCounterVisibility() {
+      if (!$colorCounter.length) {
+        return;
+      }
+      const hasDesign = Boolean($designImage.attr('src'));
+      $colorCounter.toggleClass('is-hidden', !(hasDesign && isColorCounterVisible));
+    }
+
     function switchPanel(category) {
       $categories.removeClass('is-active');
       $categories.filter(`[data-category="${category}"]`).addClass('is-active');
 
       $panels.removeClass('is-active');
       $panels.filter(`[data-panel="${category}"]`).addClass('is-active');
+      $stage.toggleClass('is-design-preview', category === 'design');
 
       if (category === 'design') {
         updateSelectQuantitiesButton();
+        updatePlaceDesignButton();
+        updateColorCounterVisibility();
       }
 
       if (category === 'placement') {
         setDesignImageVisibility(true);
       }
+    }
+
+    function isPlacementPanelActive() {
+      return $panels.filter('[data-panel="placement"]').hasClass('is-active');
     }
 
     function getViewForPlacement(placement) {
@@ -921,6 +946,15 @@
       });
     }
 
+    function resetToFrontView() {
+      currentView = 'front';
+      $altViewButtons.removeClass('is-active');
+      $altViewButtons.filter('[data-view="front"]').addClass('is-active');
+      setBaseImageForView('front');
+      setAltViewButtonImages();
+      renderStageOverlays();
+    }
+
     function renderColors() {
       const colors = data.colors || {};
       const entries = Object.keys(colors);
@@ -987,6 +1021,9 @@
 
     if ($colorCounter.length) {
       $colorCounter.on('input change', 'input, select', function () {
+        if ($(this).data('role') === 'color-swatch-input') {
+          return;
+        }
         if (lastColorCounterCanvas) {
           analyzeImageColors(lastColorCounterCanvas);
         }
@@ -1306,7 +1343,9 @@
         $designImage.attr('src', loadEvent.target.result);
         $designImage.addClass('is-visible');
         setDesignImageVisibility(true);
-        switchPanel('placement');
+        updatePlaceDesignButton();
+        isColorCounterVisible = true;
+        updateColorCounterVisibility();
 
         if ($colorCounter.length) {
           lastColorCounterFile = file;
@@ -1335,6 +1374,9 @@
       if (!$designImage.attr('src')) {
         return;
       }
+      if (!isPlacementPanelActive()) {
+        return;
+      }
       if (isPlacementLocked) {
         return;
       }
@@ -1345,6 +1387,9 @@
 
     $(document).on(`mousemove${dragNamespace}`, function (event) {
       if (!isDragging || isPlacementLocked) {
+        return;
+      }
+      if (!isPlacementPanelActive()) {
         return;
       }
 
@@ -1436,10 +1481,14 @@
 
       isPlacementLocked = true;
       setPlacementLockState();
+      isColorCounterVisible = false;
       renderSavedDesigns();
       renderAltViewOverlays();
       switchPanel('design');
+      resetToFrontView();
+      setDesignImageVisibility(false);
       updateSelectQuantitiesButton();
+      updateColorCounterVisibility();
       updatePlacementAvailability();
       renderStageOverlays();
     });
@@ -1448,41 +1497,8 @@
       switchPanel('quantities');
     });
 
-    $root.on('click', '.mockmaster-designer__upload-edit', function () {
-      const designName = $(this).data('design');
-      const entry = savedDesigns.find((saved) => saved.name === designName);
-      if (!entry) {
-        return;
-      }
-
-      currentDesignName = entry.name;
-      currentPlacement = entry.placement;
-      currentPlacementSize = entry.size;
-      currentDesignPosition = entry.position;
-      isPlacementLocked = false;
-      if (entry.src) {
-        $designImage.attr('src', entry.src);
-        $designImage.addClass('is-visible');
-      }
-      setDesignImageVisibility(true);
-      updatePlacementStatus();
-      setPlacementLockState();
-      updatePlacementAvailability();
-
-      $placementButtons.removeClass('is-active');
-      $placementButtons.filter(`[data-placement="${entry.placement}"]`).addClass('is-active');
-      updatePlacementSlider(entry.placement);
-      applyPlacement(entry.placement);
-      applyDesignPosition(entry.position);
-      updatePlacementDimensions();
-      setViewForPlacement(entry.placement);
-      renderAltViewOverlays();
-      renderStageOverlays();
-
-      $categories.removeClass('is-active');
-      $categories.filter('[data-category="placement"]').addClass('is-active');
-      $panels.removeClass('is-active');
-      $panels.filter('[data-panel="placement"]').addClass('is-active');
+    $root.on('click', '[data-role="place-design"]', function () {
+      switchPanel('placement');
     });
 
     $root.on('click', '.mockmaster-designer__upload-remove', function () {
@@ -1507,6 +1523,9 @@
         setPlacementLockState();
         $placementButtons.removeClass('is-active');
         $placementDimensions.text('--');
+        updatePlaceDesignButton();
+        isColorCounterVisible = false;
+        updateColorCounterVisibility();
       }
 
       renderSavedDesigns();
@@ -1534,6 +1553,7 @@
     renderColors();
     setAltViewButtonImages();
     updatePlacementStatus();
+    updateColorCounterVisibility();
     renderSavedDesigns();
     setPlacementLockState();
     renderStageOverlays();

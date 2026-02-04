@@ -92,6 +92,10 @@
   object-fit: contain;
 }
 
+.mockmaster-designer__base-image {
+  z-index: 1;
+}
+
 .mockmaster-designer__base-image.is-flipped {
   transform: scaleX(-1);
 }
@@ -101,6 +105,18 @@
   opacity: 0;
   transition: opacity 0.2s ease;
   cursor: move;
+  z-index: 4;
+}
+
+.mockmaster-designer__image-stage.is-design-preview .mockmaster-designer__design-image {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  background: rgba(128, 128, 128, 0.5);
 }
 
 .mockmaster-designer__design-image.is-locked {
@@ -120,6 +136,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
+  z-index: 2;
 }
 
 .mockmaster-designer__stage-overlay {
@@ -307,6 +324,10 @@
   padding-top: 12px;
   display: grid;
   gap: 10px;
+}
+
+.mockmaster-designer__color-counter.is-hidden {
+  display: none;
 }
 
 .mockmaster-designer__color-counter-summary {
