@@ -1,7 +1,7 @@
 .mockmaster-designer {
   color: var(--mm-text-color, #1a1a1a);
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
   gap: 24px;
   align-items: start;
   font-family: "Helvetica Neue", Arial, sans-serif;
@@ -14,6 +14,7 @@
 .mockmaster-designer__right {
   position: relative;
   min-height: 520px;
+  min-width: 0;
 }
 
 .mockmaster-designer__arc {
@@ -444,12 +445,20 @@
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   margin-bottom: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mockmaster-designer__upload-item > div:first-child {
+  min-width: 0;
+  flex: 1;
 }
 
 .mockmaster-designer__upload-name {
   font-weight: 600;
   display: block;
   color: #222;
+  overflow-wrap: anywhere;
 }
 
 .mockmaster-designer__upload-meta {
@@ -457,6 +466,7 @@
   font-size: 11px;
   color: #666;
   margin-top: 2px;
+  overflow-wrap: anywhere;
 }
 
 .mockmaster-designer__upload-edit {
