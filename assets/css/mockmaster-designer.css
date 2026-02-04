@@ -346,6 +346,7 @@
   gap: 20px;
   font-size: 11px;
   justify-content: space-around;
+  align-items: center;
 }
 
 .mockmaster-designer__color-counter-controls label {
