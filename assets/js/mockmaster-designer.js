@@ -421,6 +421,7 @@
     const $placementSize = $root.find('[data-role="placement-size"]');
     const $placementDimensions = $root.find('[data-role="placement-dimensions"]');
     const $placementSave = $root.find('[data-role="placement-save"]');
+    const $quantityTotal = $root.find('[data-role="quantity-total"]');
     const $stage = $root.find('.mockmaster-designer__image-stage');
     const savedDesigns = [];
     let isDragging = false;
@@ -732,6 +733,7 @@
       if (!savedDesigns.length) {
         $uploadList.html('<li>No saved placements yet.</li>');
         updateSelectQuantitiesButton();
+        updateQuantityCosts(updateQuantityTotal());
         return;
       }
 
@@ -757,6 +759,7 @@
       updateSelectQuantitiesButton();
       updatePlaceDesignButton();
       updatePlacementAvailability();
+      updateQuantityCosts(updateQuantityTotal());
     }
 
     function updateSelectQuantitiesButton() {
@@ -834,6 +837,51 @@
       setBaseImageForView(nextView);
       setAltViewButtonImages();
       renderStageOverlays();
+    }
+
+    function isPlacementEnabled(placement) {
+      const $button = $placementButtons.filter(`[data-placement="${placement}"]`);
+      if (!$button.length) {
+        return false;
+      }
+      return !$button.prop('disabled');
+    }
+
+    function selectPlacement(placement) {
+      const $button = $placementButtons.filter(`[data-placement="${placement}"]`);
+      if (!$button.length || $button.prop('disabled')) {
+        return false;
+      }
+      $placementButtons.removeClass('is-active');
+      $button.addClass('is-active');
+
+      currentPlacement = placement;
+      currentPlacementSize = null;
+      currentDesignPosition = null;
+      updatePlacementSlider(placement);
+      applyPlacement(placement);
+      updatePlacementDimensions();
+      setViewForPlacement(placement);
+      setDesignImageVisibility(true);
+      return true;
+    }
+
+    function getPlacementForView(view) {
+      if (view === 'left') {
+        return isPlacementEnabled('left-sleeve') ? 'left-sleeve' : null;
+      }
+      if (view === 'right') {
+        return isPlacementEnabled('right-sleeve') ? 'right-sleeve' : null;
+      }
+      if (view === 'back') {
+        return isPlacementEnabled('back') ? 'back' : null;
+      }
+      if (view === 'front') {
+        const frontPlacements = ['left-chest', 'right-chest', 'full-chest'];
+        const available = frontPlacements.find((placement) => isPlacementEnabled(placement));
+        return available || null;
+      }
+      return null;
     }
 
     function setBaseImageForView(view) {
@@ -1006,17 +1054,85 @@
         .map((size) => {
           const sizeData = sizes[size];
           const sizeLabel = String(sizeData.label || size).toUpperCase();
+          const price = typeof sizeData.price === 'number' ? sizeData.price : parseFloat(sizeData.price) || 0;
           return `
-            <div class="mockmaster-designer__quantity-row">
+            <div class="mockmaster-designer__quantity-row" data-price="${price}">
               <span>${sizeLabel}</span>
               <span>In stock: ${sizeData.stock}</span>
               <input type="number" min="0" placeholder="0" />
+              <span class="mockmaster-designer__quantity-cost">
+                <span class="mockmaster-designer__quantity-cost-label">Estimated cost:</span>
+                <span class="mockmaster-designer__quantity-cost-value" data-role="quantity-cost">--</span>
+              </span>
             </div>
           `;
         })
         .join('');
 
       $quantityOptions.html(rows);
+      const total = updateQuantityTotal();
+      updateQuantityCosts(total);
+    }
+
+    function getQuantityTotal() {
+      let total = 0;
+      $quantityOptions.find('input[type="number"]').each(function () {
+        const value = parseInt($(this).val(), 10);
+        if (!Number.isNaN(value)) {
+          total += value;
+        }
+      });
+      return total;
+    }
+
+    function updateQuantityTotal() {
+      if (!$quantityTotal.length) {
+        return 0;
+      }
+      const total = getQuantityTotal();
+      $quantityTotal.text(`Total quantity: ${total}`);
+      return total;
+    }
+
+    function getTotalPrintCost(totalQuantity) {
+      if (!totalQuantity || totalQuantity <= 0) {
+        return null;
+      }
+      if (!savedDesigns.length) {
+        return 0;
+      }
+      return savedDesigns.reduce((sum, entry) => {
+        const colorCount =
+          typeof entry.estimatedColors === 'number' && !Number.isNaN(entry.estimatedColors)
+            ? entry.estimatedColors
+            : 0;
+        const baseCost = (50 + 30 * colorCount) / totalQuantity;
+        const variableCost = 0.1 * colorCount;
+        const totalCost = (baseCost + variableCost + 1.25) / 0.6;
+        return sum + totalCost;
+      }, 0);
+    }
+
+    function updateQuantityCosts(totalQuantity) {
+      const quantityTotal = typeof totalQuantity === 'number' ? totalQuantity : getQuantityTotal();
+      const totalPrintCost = getTotalPrintCost(quantityTotal);
+
+      $quantityOptions.find('.mockmaster-designer__quantity-row').each(function () {
+        const $row = $(this);
+        const $cost = $row.find('[data-role="quantity-cost"]');
+        const priceValue = parseFloat($row.data('price'));
+        if (!$cost.length) {
+          return;
+        }
+        if (!quantityTotal || quantityTotal <= 0 || totalPrintCost === null || Number.isNaN(priceValue)) {
+          $cost.text('--');
+          return;
+        }
+        const garmentCost = priceValue / 1.2;
+        const estimatedCost = garmentCost + totalPrintCost;
+        const roundedCost = Math.floor(estimatedCost * 4) / 4;
+        $cost.text(`$${roundedCost.toFixed(2)}`);
+      });
     }
 
     updateColorCounterControls();
@@ -1423,16 +1539,7 @@
 
     $root.on('click', '.mockmaster-designer__placement-options button', function () {
       const placement = $(this).data('placement');
-      $placementButtons.removeClass('is-active');
-      $(this).addClass('is-active');
-
-      currentPlacement = placement;
-      currentPlacementSize = null;
-      currentDesignPosition = null;
-      updatePlacementSlider(placement);
-      applyPlacement(placement);
-      updatePlacementDimensions();
-      setViewForPlacement(placement);
+      selectPlacement(placement);
     });
 
     $placementSize.on('input change', function () {
@@ -1508,6 +1615,11 @@
       switchPanel('placement');
     });
 
+    $root.on('input change', '[data-role="quantity-options"] input[type="number"]', function () {
+      const total = updateQuantityTotal();
+      updateQuantityCosts(total);
+    });
+
     $root.on('click', '.mockmaster-designer__upload-remove', function () {
       const designName = $(this).data('design');
       const entryIndex = savedDesigns.findIndex((saved) => saved.name === designName);
@@ -1543,6 +1655,16 @@
 
     $root.on('click', '.mockmaster-designer__alt-view', function () {
       const view = $(this).data('view');
+      if (isPlacementPanelActive()) {
+        const placement = getPlacementForView(view);
+        if (!placement) {
+          return;
+        }
+        if (selectPlacement(placement)) {
+          return;
+        }
+        return;
+      }
       $altViewButtons.removeClass('is-active');
       $(this).addClass('is-active');
       currentView = view;
