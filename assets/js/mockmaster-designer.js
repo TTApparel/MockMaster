@@ -738,7 +738,7 @@
       const listItems = savedDesigns
         .map((entry) => {
           const colorCountText =
-            typeof entry.estimatedColors === 'number' ? `Colors: ${entry.estimatedColors}` : '';
+            typeof entry.estimatedColors === 'number' ? ` · Colors: ${entry.estimatedColors}` : '';
           return `
             <li class="mockmaster-designer__upload-item">
               <div>
