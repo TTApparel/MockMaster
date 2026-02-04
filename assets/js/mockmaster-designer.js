@@ -737,11 +737,13 @@
 
       const listItems = savedDesigns
         .map((entry) => {
+          const colorCountText =
+            typeof entry.estimatedColors === 'number' ? ` · Colors: ${entry.estimatedColors}` : '';
           return `
             <li class="mockmaster-designer__upload-item">
               <div>
                 <span class="mockmaster-designer__upload-name">${entry.name}</span>
-                <span class="mockmaster-designer__upload-meta">${entry.placementLabel} · ${entry.dimensions} · ${formatPositionText(entry.position)}</span>
+                <span class="mockmaster-designer__upload-meta">${entry.placementLabel} · ${entry.dimensions} · ${formatPositionText(entry.position)}${colorCountText}</span>
               </div>
               <div class="mockmaster-designer__upload-actions">
                 <button type="button" class="mockmaster-designer__upload-remove" data-design="${entry.name}">Remove</button>
@@ -1459,6 +1461,10 @@
       const dimensions = getPlacementDimensionsText(currentPlacement, size);
       const widthPercent = getScaledPlacementWidthPercent(currentPlacement, size);
       const designSrc = $designImage.attr('src');
+      const estimatedColorsValue = parseInt($colorCountInput.val(), 10);
+      const estimatedColors = Number.isNaN(estimatedColorsValue)
+        ? currentColorPalette.length
+        : estimatedColorsValue;
       const overlayView = getViewForPlacement(currentPlacement);
       const existingIndex = savedDesigns.findIndex((entry) => entry.name === currentDesignName);
       const nextEntry = {
@@ -1471,6 +1477,7 @@
         widthPercent,
         view: overlayView,
         src: designSrc,
+        estimatedColors,
       };
 
       if (existingIndex >= 0) {
