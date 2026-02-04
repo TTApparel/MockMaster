@@ -314,6 +314,7 @@
 .mockmaster-designer__upload-list {
   margin: 12px 0 0;
   padding-left: 0;
+  list-style: none;
   font-size: 12px;
   color: #555;
 }
