@@ -607,6 +607,15 @@
   line-height: 1.2;
 }
 
+.mockmaster-designer__quantity-stock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.2;
+}
+
+.mockmaster-designer__quantity-stock-label,
+.mockmaster-designer__quantity-stock-value,
 .mockmaster-designer__quantity-cost-label,
 .mockmaster-designer__quantity-cost-value {
   white-space: nowrap;

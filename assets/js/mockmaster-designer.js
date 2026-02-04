@@ -1058,7 +1058,10 @@
           return `
             <div class="mockmaster-designer__quantity-row" data-price="${price}" data-stock="${sizeData.stock}">
               <span>${sizeLabel}</span>
-              <span>In stock: ${sizeData.stock}</span>
+              <span class="mockmaster-designer__quantity-stock">
+                <span class="mockmaster-designer__quantity-stock-label">In stock:</span>
+                <span class="mockmaster-designer__quantity-stock-value">${sizeData.stock}</span>
+              </span>
               <input type="number" min="0" max="${sizeData.stock}" placeholder="0" />
               <span class="mockmaster-designer__quantity-cost">
                 <span class="mockmaster-designer__quantity-cost-label">Unit cost:</span>
