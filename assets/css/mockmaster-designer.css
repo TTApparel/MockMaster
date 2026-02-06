@@ -665,6 +665,18 @@
     min-height: auto;
   }
 
+  .mockmaster-designer__left {
+    order: 1;
+  }
+
+  .mockmaster-designer__right {
+    order: 2;
+  }
+
+  .mockmaster-designer__center {
+    order: 3;
+  }
+
   .mockmaster-designer__arc--left {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
