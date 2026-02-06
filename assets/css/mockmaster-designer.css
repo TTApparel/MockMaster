@@ -18,7 +18,7 @@
 }
 
 .mockmaster-designer__right {
-  overflow: hidden;
+  overflow: visible;
 }
 
 .mockmaster-designer__arc {
@@ -192,13 +192,15 @@
 }
 
 .mockmaster-designer__add-to-cart {
-  border: 2px solid var(--mm-accent, #e01b24);
+  border: 1px solid var(--mm-accent, #e01b24);
   background: var(--mm-button-bg, #fff);
   color: var(--mm-button-text, #e01b24);
   padding: 10px 22px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   cursor: pointer;
+  display: block;
+  margin: 0 auto;
 }
 
 .mockmaster-designer__panel {
@@ -211,6 +213,10 @@
   position: relative;
   z-index: 1;
   overflow: hidden;
+}
+
+.mockmaster-designer__panel[data-panel='color'] {
+  overflow: visible;
 }
 
 .mockmaster-designer__panel.is-active {

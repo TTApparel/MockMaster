@@ -159,7 +159,7 @@ class MockMasterDesigner {
                         <p class="mockmaster-designer__panel-title">Sizes & quantities</p>
                         <p class="mockmaster-designer__quantity-total" data-role="quantity-total">Total quantity: 0</p>
                         <div class="mockmaster-designer__quantities" data-role="quantity-options"></div>
-                        <button type="button" class="mockmaster-designer__add-to-cart">Add to Cart</button>
+                        <button type="button" class="mockmaster-designer__add-to-cart">Add to Quote</button>
                     </div>
                 </div>
             </div>
@@ -352,7 +352,7 @@ class MockMasterDesigner {
                         <span>Right</span>
                     </button>
                 </div>
-                <button type="button" class="mockmaster-designer__add-to-cart">Add to Cart</button>
+                <button type="button" class="mockmaster-designer__add-to-cart">Add to Quote</button>
             </div>
                 <div class="mockmaster-designer__right">
                     <div class="mockmaster-designer__arc mockmaster-designer__arc--right">
