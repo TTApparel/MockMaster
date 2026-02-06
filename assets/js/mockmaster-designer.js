@@ -1217,6 +1217,9 @@
 
       if (!palette.length) {
         $colorPalette.html('<span class="mockmaster-designer__color-counter-empty">No colors detected.</span>');
+        if ($colorCount.length) {
+          $colorCount.text('0');
+        }
         return;
       }
 
@@ -1309,8 +1312,9 @@
 
       const palette = result.palette || [];
       const estimated = result.final_color_count || 0;
+      const swatchTotal = palette.length;
 
-      $colorCount.text(typeof estimated === 'number' ? String(estimated) : '--');
+      $colorCount.text(typeof swatchTotal === 'number' ? String(swatchTotal) : '0');
       currentColorPalette = palette.map((entry) => ({ ...entry }));
       renderPalette(currentColorPalette);
 
