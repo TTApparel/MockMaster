@@ -1054,7 +1054,7 @@
         .map((size) => {
           const sizeData = sizes[size];
           const sizeLabel = String(sizeData.label || size).toUpperCase();
-          const price = typeof sizeData.price === 'number' ? sizeData.price : parseFloat(sizeData.price) || 0;
+          const price = coercePrice(sizeData.price);
           return `
             <div class="mockmaster-designer__quantity-row" data-price="${price}" data-stock="${sizeData.stock}">
               <span>${sizeLabel}</span>
@@ -1075,6 +1075,18 @@
       $quantityOptions.html(rows);
       const total = updateQuantityTotal();
       updateQuantityCosts(total);
+    }
+
+    function coercePrice(value) {
+      if (typeof value === 'number') {
+        return value;
+      }
+      if (typeof value === 'string') {
+        const cleaned = value.replace(/[^0-9.-]/g, '');
+        const parsed = parseFloat(cleaned);
+        return Number.isNaN(parsed) ? 0 : parsed;
+      }
+      return 0;
     }
 
     function getQuantityTotal() {
@@ -1123,7 +1135,7 @@
       $quantityOptions.find('.mockmaster-designer__quantity-row').each(function () {
         const $row = $(this);
         const $cost = $row.find('[data-role="quantity-cost"]');
-        const priceValue = parseFloat($row.data('price'));
+        const priceValue = coercePrice($row.data('price'));
         if (!$cost.length) {
           return;
         }
