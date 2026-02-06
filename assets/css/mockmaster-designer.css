@@ -683,6 +683,10 @@
     gap: 10px;
   }
 
+  .mockmaster-designer__swatches {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
   .mockmaster-designer__placement-options {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
