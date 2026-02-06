@@ -665,6 +665,12 @@
     min-height: auto;
   }
 
+  .mockmaster-designer__arc--left {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
   .mockmaster-designer__arc--left::before,
   .mockmaster-designer__arc--right::before {
     display: none;
