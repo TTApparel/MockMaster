@@ -117,8 +117,10 @@ class MockMasterDesigner {
                         </label>
                         <ul class="mockmaster-designer__upload-list" data-role="design-uploads"></ul>
                         <div class="mockmaster-designer__color-counter is-hidden" data-role="color-counter">
-                            <p class="mockmaster-designer__panel-subtitle">Approximate color count</p>
-                            <p class="mockmaster-designer__color-counter-total" data-role="color-count">0</p>
+                            <div class="mockmaster-designer__color-counter-header">
+                                <p class="mockmaster-designer__panel-subtitle">Approximate color count</p>
+                                <p class="mockmaster-designer__color-counter-total" data-role="color-count">0</p>
+                            </div>
                             <div class="mockmaster-designer__color-counter-controls">
                                 <label>
                                     <span>MAXIMUM COLOR COUNT</span>
@@ -366,8 +368,10 @@ class MockMasterDesigner {
                             </label>
                             <ul class="mockmaster-designer__upload-list" data-role="design-uploads"></ul>
                             <div class="mockmaster-designer__color-counter is-hidden" data-role="color-counter">
-                                <p class="mockmaster-designer__panel-subtitle">Approximate color count</p>
-                                <p class="mockmaster-designer__color-counter-total" data-role="color-count">0</p>
+                                <div class="mockmaster-designer__color-counter-header">
+                                    <p class="mockmaster-designer__panel-subtitle">Approximate color count</p>
+                                    <p class="mockmaster-designer__color-counter-total" data-role="color-count">0</p>
+                                </div>
                                 <div class="mockmaster-designer__color-counter-controls">
                                     <label>
                                         <span>MAXIMUM COLOR COUNT</span>
